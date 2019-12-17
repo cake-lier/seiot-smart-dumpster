@@ -12,6 +12,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import java.net.MalformedURLException;
+import java.util.Optional;
 import java.util.UUID;
 
 import it.unibo.seiot.gm.smartdumpsterapp.R;
@@ -28,25 +30,17 @@ public class MainActivity extends AppCompatActivity {
 
     private static final int ENABLE_BT_REQ = 1;
     private static final String BT_TARGET_NAME = "bl-arduino";
-    private static final String TRASH_1_SET_MESSAGE = "A";
-    private static final String TRASH_2_SET_MESSAGE = "B";
-    private static final String TRASH_3_SET_MESSAGE = "C";
+    private static final String URL = "192.168.43.201/index.php"; // TODO:
 
-    private BluetoothChannel btChannel;
+    private Optional<BluetoothChannel> btChannel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         /* activate bluetooth */
-        final BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
-        if (btAdapter == null) {
-            Log.e("Smart Dumpster App", "BT is not available on this device");
-            finish();
-        }
-        if (!btAdapter.isEnabled()) {
-            startActivityForResult(new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE), ENABLE_BT_REQ);
-        }
+        btChannel = Optional.empty();
+        activateBT();
         /* init UI */
         initUI();
     }
@@ -64,13 +58,22 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onStop() {
         super.onStop();
-        this.btChannel.close();
+        this.btChannel.ifPresent(BluetoothChannel::close);
+    }
+
+    private void activateBT() {
+        final BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
+        if (btAdapter == null) {
+            Log.e("Smart Dumpster App", "BT is not available on this device");
+            finish();
+        } else if (!btAdapter.isEnabled()) {
+            startActivityForResult(new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE), ENABLE_BT_REQ);
+        }
     }
 
     private void initUI() {
         /* Token text */
         final TextView tokenText = (TextView) findViewById(R.id.tokenText);
-        tokenText.setOnClickListener(this::blConnect);
         /* Connect button */
         final Button connectBtn = (Button) findViewById(R.id.connectButton);
         connectBtn.setOnClickListener(this::blConnect);
@@ -93,6 +96,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void blConnect(final View v) {
+        activateBT();
         try {
             final BluetoothDevice serverDevice = BluetoothUtils.getPairedDeviceByName(BT_TARGET_NAME);
             final UUID uuid = BluetoothUtils.getEmbeddedDeviceDefaultUuid();
@@ -101,18 +105,18 @@ public class MainActivity extends AppCompatActivity {
                         @Override
                         public void onConnectionActive(final BluetoothChannel channel) {
                             ((Button) findViewById(R.id.askTokenButton)).setEnabled(true);
-                            btChannel = channel;
-                            btChannel.registerListener(new RealBluetoothChannel.Listener() {
+                            btChannel = Optional.of(channel);
+                            btChannel.ifPresent(c -> c.registerListener(new RealBluetoothChannel.Listener() {
                                                             @Override
                                                             public void onMessageReceived(String receivedMessage) {
                                                                 // TODO: what to do when a message is received
-                                                                // when the message is the token set tokenView to token
+                                                                // message types: response to trash type, and end of deposit
                                                             }
                                                             @Override
                                                             public void onMessageSent(String sentMessage) {
                                                                 // TODO: what to do when a message is sent
                                                             }
-                                                        });
+                                                        }));
                         }
                         @Override
                         public void onConnectionCanceled() {
@@ -127,18 +131,26 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void requestToken(final View v) {
-        // TODO: send token request message via http
+        try {
+            final HTTPConnection connection = new HTTPConnection(URL, HTTPConnectionMethods.GET, token -> {
+                // TODO: manage received token
+                // if token is correct:
+                ((TextView) findViewById(R.id.tokenText)).setText(token);
+            });
+        } catch (MalformedURLException e) {
+            Log.e("Smart Dumpster App", "Incorrect URL");
+        }
     }
 
     private void setTrashType1(final View v) {
-        this.btChannel.sendMessage(TRASH_1_SET_MESSAGE);
+        this.btChannel.ifPresent(c -> c.sendMessage(ControllerMessage.TRASH_1_SET_MESSAGE.getMessage()));
     }
 
     private void setTrashType2(final View v) {
-        this.btChannel.sendMessage(TRASH_2_SET_MESSAGE);
+        this.btChannel.ifPresent(c -> c.sendMessage(ControllerMessage.TRASH_2_SET_MESSAGE.getMessage()));
     }
 
     private void setTrashType3(final View v) {
-        this.btChannel.sendMessage(TRASH_3_SET_MESSAGE);
+        this.btChannel.ifPresent(c -> c.sendMessage(ControllerMessage.TRASH_3_SET_MESSAGE.getMessage()));
     }
 }
