@@ -1,3 +1,9 @@
 <resources>
   <string name="app_name">Smart DumpsterApp</string>
+  <string name="trashType1Text">Rifiuto A</string>
+  <string name="trashType2Text">Rifiuto B</string>
+  <string name="trashType3Text">Rifiuto C</string>
+  <string name="connectButtonText">Connettiti</string>
+  <string name="requestTokenText">Richiedi token</string>
+  <string name="tokenText">token</string>
 </resources>

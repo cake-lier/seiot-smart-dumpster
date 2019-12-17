@@ -4,15 +4,80 @@
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".MainActivity">
+        tools:context=".app.MainActivity">
 
-  <TextView
-          android:layout_width="wrap_content"
+  <Button
+          android:id="@+id/connectButton"
+          android:layout_width="105dp"
           android:layout_height="wrap_content"
-          android:text="Hello World!"
-          app:layout_constraintBottom_toBottomOf="parent"
-          app:layout_constraintLeft_toLeftOf="parent"
-          app:layout_constraintRight_toRightOf="parent"
+          android:layout_marginStart="153dp"
+          android:layout_marginTop="90dp"
+          android:layout_marginEnd="153dp"
+          android:text="@string/connectButtonText"
+          app:layout_constraintEnd_toEndOf="parent"
+          app:layout_constraintStart_toStartOf="parent"
           app:layout_constraintTop_toTopOf="parent" />
 
+  <Button
+          android:id="@+id/trashType3Button"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="384dp"
+          android:layout_marginEnd="24dp"
+          android:text="@string/trashType3Text"
+          app:layout_constraintEnd_toEndOf="parent"
+          app:layout_constraintTop_toTopOf="parent" />
+
+  <Button
+          android:id="@+id/trashType1Button"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_marginStart="24dp"
+          android:layout_marginTop="384dp"
+          android:text="@string/trashType1Text"
+          app:layout_constraintStart_toStartOf="parent"
+          app:layout_constraintTop_toTopOf="parent" />
+
+  <Button
+          android:id="@+id/trashType2Button"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_marginStart="48dp"
+          android:layout_marginTop="248dp"
+          android:layout_marginEnd="48dp"
+          android:text="@string/trashType2Text"
+          app:layout_constraintEnd_toStartOf="@+id/trashType3Button"
+          app:layout_constraintHorizontal_bias="0.285"
+          app:layout_constraintStart_toEndOf="@+id/trashType1Button"
+          app:layout_constraintTop_toBottomOf="@+id/connectButton" />
+
+  <Button
+          android:id="@+id/askTokenButton"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_marginStart="141dp"
+          android:layout_marginTop="87dp"
+          android:layout_marginEnd="141dp"
+          android:layout_marginBottom="113dp"
+          android:text="@string/requestTokenText"
+          app:layout_constraintBottom_toTopOf="@+id/trashType2Button"
+          app:layout_constraintEnd_toEndOf="parent"
+          app:layout_constraintStart_toStartOf="parent"
+          app:layout_constraintTop_toBottomOf="@+id/connectButton"
+          app:layout_constraintVertical_bias="0.0"
+          tools:text="@string/requestTokenText" />
+
+  <TextView
+          android:id="@+id/tokenText"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_marginStart="187dp"
+          android:layout_marginTop="34dp"
+          android:layout_marginEnd="187dp"
+          android:layout_marginBottom="59dp"
+          android:text="@string/tokenText"
+          app:layout_constraintBottom_toTopOf="@+id/trashType2Button"
+          app:layout_constraintEnd_toEndOf="parent"
+          app:layout_constraintStart_toStartOf="parent"
+          app:layout_constraintTop_toBottomOf="@+id/askTokenButton" />
 </androidx.constraintlayout.widget.ConstraintLayout>
