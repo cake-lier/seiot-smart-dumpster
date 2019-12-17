@@ -10,7 +10,7 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.util.Arrays;
 
-import unibo.btlib.utils.C;
+import it.unibo.seiot.gm.smartdumpsterapp.btlib.utils.C;
 
 public final class EmulatedBluetoothChannel extends BluetoothChannel {
 

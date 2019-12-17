@@ -7,7 +7,7 @@ import android.os.Message;
 import java.util.ArrayList;
 import java.util.List;
 
-import unibo.btlib.utils.C;
+import it.unibo.seiot.gm.smartdumpsterapp.btlib.utils.C;
 
 public abstract class BluetoothChannel implements CommChannel {
 

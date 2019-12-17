@@ -10,7 +10,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
 
-import unibo.btlib.utils.C;
+import it.unibo.seiot.gm.smartdumpsterapp.btlib.utils.C;
 
 public final class RealBluetoothChannel extends BluetoothChannel {
 
