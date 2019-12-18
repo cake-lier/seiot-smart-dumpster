@@ -30,7 +30,8 @@ public class MainActivity extends AppCompatActivity {
 
     private static final int ENABLE_BT_REQ = 1;
     private static final String BT_TARGET_NAME = "bl-arduino";
-    private static final String URL = "192.168.43.201/index.php"; // TODO:
+    private static final String REQUESTING_STR = "Richiesta in corso";
+    private static final String TAG = "SmartDumpsterApp_Main";
 
     private Optional<BluetoothChannel> btChannel;
 
@@ -49,9 +50,9 @@ public class MainActivity extends AppCompatActivity {
     public void onActivityResult(int reqID, int res, Intent data) {
         super.onActivityResult(reqID, res, data);
         if (reqID == ENABLE_BT_REQ && res == Activity.RESULT_OK) {
-            Log.d("Smart Dumpster App", "BT was enabled");
+            Log.d(TAG, "BT was enabled");
         } else if (reqID == ENABLE_BT_REQ && res == Activity.RESULT_CANCELED) {
-            Log.d("Smart Dumpster App", "BT was not enabled");
+            Log.d(TAG, "BT was not enabled");
         }
     }
 
@@ -64,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
     private void activateBT() {
         final BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
         if (btAdapter == null) {
-            Log.e("Smart Dumpster App", "BT is not available on this device");
+            Log.e(TAG, "BT is not available on this device");
             finish();
         } else if (!btAdapter.isEnabled()) {
             startActivityForResult(new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE), ENABLE_BT_REQ);
@@ -125,21 +126,15 @@ public class MainActivity extends AppCompatActivity {
                     };
             final ConnectToBluetoothServerTask connectTask = new ConnectToBluetoothServerTask(serverDevice, uuid, eventListener);
             connectTask.execute();
+            Log.i(TAG, "Task for connecting to BT executed");
         } catch (final BluetoothDeviceNotFound e) {
-            Log.e("Smart Dumpster App", "BT device " + BT_TARGET_NAME + " found");
+            Log.e(TAG, "BT device " + BT_TARGET_NAME + " found");
         }
     }
 
     private void requestToken(final View v) {
-        try {
-            final HTTPConnection connection = new HTTPConnection(URL, HTTPConnectionMethods.GET, token -> {
-                // TODO: manage received token
-                // if token is correct:
-                ((TextView) findViewById(R.id.tokenText)).setText(token);
-            });
-        } catch (MalformedURLException e) {
-            Log.e("Smart Dumpster App", "Incorrect URL");
-        }
+        ((TextView) findViewById(R.id.tokenText)).setText(REQUESTING_STR);
+        new GetTokenTask(s -> ((TextView) findViewById(R.id.tokenText)).setText(s)).execute();
     }
 
     private void setTrashType1(final View v) {
