@@ -13,8 +13,11 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import java.net.MalformedURLException;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import it.unibo.seiot.gm.smartdumpsterapp.R;
 import it.unibo.seiot.gm.smartdumpsterapp.btlib.BluetoothChannel;
@@ -101,23 +104,41 @@ public class MainActivity extends AppCompatActivity {
         try {
             final BluetoothDevice serverDevice = BluetoothUtils.getPairedDeviceByName(BT_TARGET_NAME);
             final UUID uuid = BluetoothUtils.getEmbeddedDeviceDefaultUuid();
+            final BluetoothChannel.Listener listener
+                    = new RealBluetoothChannel.Listener() {
+                        @Override
+                        public void onMessageReceived(final String receivedMessage) {
+                            // the terminator of the arduino message is a carriage return!!!!
+                            final String parsedMessage = receivedMessage.replaceAll("(\\r|\\n)", "");
+                            if (parsedMessage.equals(ControllerMessage.START_DEPOSIT.getMessage())) {
+                                // the deposit started, the trash type can't be changed
+                                new SendMessageToServiceTask().execute(ServiceMessage.START_DEPOSIT.getMessage());
+                                disableTrashButtons();
+                                ((Button) findViewById(R.id.askTokenButton)).setEnabled(false);
+                            } else if (parsedMessage.equals(ControllerMessage.STOP_DEPOSIT.getMessage())) {
+                                // the deposit ended, a new token can be requested
+                                new SendMessageToServiceTask().execute(ServiceMessage.STOP_DEPOSIT.getMessage());
+                                ((Button) findViewById(R.id.askTokenButton)).setEnabled(true);
+                            } else {
+                                Log.i(TAG, ControllerMessage.START_DEPOSIT.getMessage());
+                                Log.i(TAG, ControllerMessage.STOP_DEPOSIT.getMessage());
+                                Log.d(TAG,
+                                      "rec " + receivedMessage.chars().boxed().collect(Collectors.toList()));
+                            }
+                        }
+                        @Override
+                        public void onMessageSent(final String sentMessage) {
+                            // TODO: what to do when a message is sent
+                            Log.i(TAG, sentMessage);
+                        }
+                    };
             final ConnectionTask.EventListener eventListener =
                     new ConnectionTask.EventListener() {
                         @Override
                         public void onConnectionActive(final BluetoothChannel channel) {
                             ((Button) findViewById(R.id.askTokenButton)).setEnabled(true);
                             btChannel = Optional.of(channel);
-                            btChannel.ifPresent(c -> c.registerListener(new RealBluetoothChannel.Listener() {
-                                                            @Override
-                                                            public void onMessageReceived(String receivedMessage) {
-                                                                // TODO: what to do when a message is received
-                                                                // message types: response to trash type, and end of deposit
-                                                            }
-                                                            @Override
-                                                            public void onMessageSent(String sentMessage) {
-                                                                // TODO: what to do when a message is sent
-                                                            }
-                                                        }));
+                            btChannel.ifPresent(c -> c.registerListener(listener));
                         }
                         @Override
                         public void onConnectionCanceled() {
@@ -134,7 +155,10 @@ public class MainActivity extends AppCompatActivity {
 
     private void requestToken(final View v) {
         ((TextView) findViewById(R.id.tokenText)).setText(REQUESTING_STR);
-        new GetTokenTask(s -> ((TextView) findViewById(R.id.tokenText)).setText(s)).execute();
+        new GetTokenTask(s -> {
+            ((TextView) findViewById(R.id.tokenText)).setText(s);
+            this.enableTrashButtons();
+        }).execute();
     }
 
     private void setTrashType1(final View v) {
@@ -147,5 +171,20 @@ public class MainActivity extends AppCompatActivity {
 
     private void setTrashType3(final View v) {
         this.btChannel.ifPresent(c -> c.sendMessage(ControllerMessage.TRASH_3_SET_MESSAGE.getMessage()));
+    }
+
+    private void enableTrashButtons() {
+        setEnableTrashButtons(true);
+    }
+
+    private void disableTrashButtons() {
+        setEnableTrashButtons(false);
+    }
+
+    private void setEnableTrashButtons(final boolean set) {
+        Stream.of(R.id.trashType1Button, R.id.trashType2Button, R.id.trashType3Button)
+              .map(this::findViewById)
+              .map(o -> {return (Button) o;})
+              .forEach(b -> b.setEnabled(set));
     }
 }

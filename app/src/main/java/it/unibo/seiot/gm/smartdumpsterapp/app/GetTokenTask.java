@@ -3,8 +3,10 @@ package it.unibo.seiot.gm.smartdumpsterapp.app;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Optional;
@@ -15,7 +17,7 @@ public class GetTokenTask extends AsyncTask<Void, Void, String> {
     private static final String TAG = "SmartDumpsterApp_HTTPConnection";
     private static final String REQUEST_URL = "http://www.google.com"; // TODO:
 
-    final Consumer<String> resultManager;
+    private final Consumer<String> resultManager;
 
     public GetTokenTask(final Consumer<String> resultManager) {
         this.resultManager = resultManager;
@@ -43,7 +45,18 @@ public class GetTokenTask extends AsyncTask<Void, Void, String> {
     }
 
     private String readStream(final InputStream in) {
-        // TODO:
+        // TODO: maybe move it somewhere common?
+        try (final BufferedReader br = new BufferedReader(new InputStreamReader(in))) {
+            final StringBuilder sb = new StringBuilder();
+            String s = br.readLine();
+            while (s != null) {
+                sb.append(s);
+                s = br.readLine();
+            }
+            return sb.toString();
+        } catch (final IOException e) {
+            Log.e(TAG, e.getMessage());
+        }
         return "";
     }
 }
