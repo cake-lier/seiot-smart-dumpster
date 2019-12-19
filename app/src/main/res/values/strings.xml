@@ -6,4 +6,5 @@
   <string name="connectButtonText">Connettiti</string>
   <string name="requestTokenText">Richiedi token</string>
   <string name="tokenText">token</string>
+  <string name="keepOpenText">Prolunga apertura</string>
 </resources>

@@ -27,8 +27,9 @@ import it.unibo.seiot.gm.smartdumpsterapp.btlib.ConnectionTask;
 import it.unibo.seiot.gm.smartdumpsterapp.btlib.RealBluetoothChannel;
 import it.unibo.seiot.gm.smartdumpsterapp.btlib.exceptions.BluetoothDeviceNotFound;
 
-// TODO: manage http connection
-// TODO: which messages can be received with bluetooth?
+/**
+ * The main activity of the app.
+ */
 public class MainActivity extends AppCompatActivity {
 
     private static final int ENABLE_BT_REQ = 1;
@@ -76,8 +77,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initUI() {
-        /* Token text */
-        final TextView tokenText = (TextView) findViewById(R.id.tokenText);
         /* Connect button */
         final Button connectBtn = (Button) findViewById(R.id.connectButton);
         connectBtn.setOnClickListener(this::blConnect);
@@ -88,15 +87,19 @@ public class MainActivity extends AppCompatActivity {
         /* Trash type 1 button */
         final Button trash1Btn = (Button) findViewById(R.id.trashType1Button);
         trash1Btn.setEnabled(false);
-        trash1Btn.setOnClickListener(this::setTrashType1);
+        trash1Btn.setOnClickListener(v -> this.sendTrashTypeMessage(ControllerMessage.TRASH_1_SET_MESSAGE));
         /* Trash type 2 button */
         final Button trash2Btn = (Button) findViewById(R.id.trashType2Button);
         trash2Btn.setEnabled(false);
-        trash2Btn.setOnClickListener(this::setTrashType2);
+        trash2Btn.setOnClickListener(v -> this.sendTrashTypeMessage(ControllerMessage.TRASH_2_SET_MESSAGE));
         /* Trash type 3 button */
         final Button trash3Btn = (Button) findViewById(R.id.trashType3Button);
         trash3Btn.setEnabled(false);
-        trash3Btn.setOnClickListener(this::setTrashType3);
+        trash3Btn.setOnClickListener(v -> this.sendTrashTypeMessage(ControllerMessage.TRASH_3_SET_MESSAGE));
+        /* Keep open button */
+        final Button keepOpenButton = (Button) findViewById(R.id.keepOpenButton);
+        keepOpenButton.setEnabled(false);
+        keepOpenButton.setOnClickListener(this::askKeepOpen);
     }
 
     private void blConnect(final View v) {
@@ -108,7 +111,7 @@ public class MainActivity extends AppCompatActivity {
                     = new RealBluetoothChannel.Listener() {
                         @Override
                         public void onMessageReceived(final String receivedMessage) {
-                            // the terminator of the arduino message is a carriage return!!!!
+                            // the terminator of the arduino message is a carriage return
                             final String parsedMessage = receivedMessage.replaceAll("(\\r|\\n)", "");
                             if (parsedMessage.equals(ControllerMessage.START_DEPOSIT.getMessage())) {
                                 // the deposit started, the trash type can't be changed
@@ -118,18 +121,16 @@ public class MainActivity extends AppCompatActivity {
                             } else if (parsedMessage.equals(ControllerMessage.STOP_DEPOSIT.getMessage())) {
                                 // the deposit ended, a new token can be requested
                                 new SendMessageToServiceTask().execute(ServiceMessage.STOP_DEPOSIT.getMessage());
+                                ((Button) findViewById(R.id.keepOpenButton)).setEnabled(false);
                                 ((Button) findViewById(R.id.askTokenButton)).setEnabled(true);
                             } else {
-                                Log.i(TAG, ControllerMessage.START_DEPOSIT.getMessage());
-                                Log.i(TAG, ControllerMessage.STOP_DEPOSIT.getMessage());
-                                Log.d(TAG,
-                                      "rec " + receivedMessage.chars().boxed().collect(Collectors.toList()));
+                                Log.d(TAG, "received ASCII " + receivedMessage.chars().boxed().collect(Collectors.toList()));
                             }
                         }
                         @Override
                         public void onMessageSent(final String sentMessage) {
                             // TODO: what to do when a message is sent
-                            Log.i(TAG, sentMessage);
+                            Log.d(TAG, sentMessage);
                         }
                     };
             final ConnectionTask.EventListener eventListener =
@@ -137,7 +138,7 @@ public class MainActivity extends AppCompatActivity {
                         @Override
                         public void onConnectionActive(final BluetoothChannel channel) {
                             ((Button) findViewById(R.id.askTokenButton)).setEnabled(true);
-                            btChannel = Optional.of(channel);
+                            btChannel = Optional.ofNullable(channel); // can't be sure null will not be passed as parameter
                             btChannel.ifPresent(c -> c.registerListener(listener));
                         }
                         @Override
@@ -147,9 +148,9 @@ public class MainActivity extends AppCompatActivity {
                     };
             final ConnectToBluetoothServerTask connectTask = new ConnectToBluetoothServerTask(serverDevice, uuid, eventListener);
             connectTask.execute();
-            Log.i(TAG, "Task for connecting to BT executed");
+            Log.d(TAG, "Task for connecting to BT executed");
         } catch (final BluetoothDeviceNotFound e) {
-            Log.e(TAG, "BT device " + BT_TARGET_NAME + " found");
+            Log.e(TAG, "BT device " + BT_TARGET_NAME + " not found");
         }
     }
 
@@ -161,16 +162,13 @@ public class MainActivity extends AppCompatActivity {
         }).execute();
     }
 
-    private void setTrashType1(final View v) {
-        this.btChannel.ifPresent(c -> c.sendMessage(ControllerMessage.TRASH_1_SET_MESSAGE.getMessage()));
+    private void askKeepOpen(final View v) {
+        this.btChannel.ifPresent(c -> c.sendMessage(ControllerMessage.KEEP_OPEN_MESSAGE.getMessage()));
     }
 
-    private void setTrashType2(final View v) {
-        this.btChannel.ifPresent(c -> c.sendMessage(ControllerMessage.TRASH_2_SET_MESSAGE.getMessage()));
-    }
-
-    private void setTrashType3(final View v) {
-        this.btChannel.ifPresent(c -> c.sendMessage(ControllerMessage.TRASH_3_SET_MESSAGE.getMessage()));
+    private void sendTrashTypeMessage(final ControllerMessage type) {
+        this.btChannel.ifPresent(c -> c.sendMessage(type.getMessage()));
+        ((Button) findViewById(R.id.keepOpenButton)).setEnabled(true);
     }
 
     private void enableTrashButtons() {

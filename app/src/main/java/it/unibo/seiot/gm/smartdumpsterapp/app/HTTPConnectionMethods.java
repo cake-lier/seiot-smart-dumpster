@@ -9,7 +9,13 @@ import java.net.ProtocolException;
 import java.util.Optional;
 import java.util.function.BiFunction;
 
+/**
+ * An enum representing the possible ways a message using HTTP can be send.
+ */
 public enum HTTPConnectionMethods {
+    /**
+     * An HTTP GET request.
+     */
     GET((c, p) -> {
         try {
             c.setRequestMethod("GET");
@@ -26,6 +32,9 @@ public enum HTTPConnectionMethods {
             return Optional.empty();
         }
     }),
+    /**
+     * An HTTP POST request.
+     */
     POST((c,p) -> {
         try {
             c.setRequestMethod("POST");
@@ -53,6 +62,12 @@ public enum HTTPConnectionMethods {
         this.function = function;
     }
 
+    /**
+     * Executes an HTTP request.
+     * @param connection the HTTPUrlConnection used to execute the request
+     * @param payload the optional payload to be sent (only via POST)
+     * @return the {@link InputStream} containing the server response if all went well, an empty {@link Optional} otherwise
+     */
     public Optional<InputStream> doRequest(final HttpURLConnection connection, final Optional<byte[]> payload) {
         return this.function.apply(connection, payload);
     }

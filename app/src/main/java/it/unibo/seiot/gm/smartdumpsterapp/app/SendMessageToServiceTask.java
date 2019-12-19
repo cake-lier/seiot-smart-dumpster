@@ -4,17 +4,22 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Optional;
 
+/**
+ * An {@link AsyncTask} used for sending messages to the service server.
+ */
 public class SendMessageToServiceTask extends AsyncTask<String, Void, Boolean> {
 
     private static final String TAG = "SmartDumpsterApp_HTTPConnection";
     private static final String BASE_URL = "http://www.google.com"; // TODO:
 
+    /**
+     * Builds a new {@link SendMessageToServiceTask}.
+     */
     public SendMessageToServiceTask() {
     }
 

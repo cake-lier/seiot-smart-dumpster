@@ -12,13 +12,19 @@ import java.net.URL;
 import java.util.Optional;
 import java.util.function.Consumer;
 
+/**
+ * {@link AsyncTask} used for getting a token from the service
+ */
 public class GetTokenTask extends AsyncTask<Void, Void, String> {
-
     private static final String TAG = "SmartDumpsterApp_HTTPConnection";
-    private static final String REQUEST_URL = "http://www.google.com"; // TODO:
+    private static final String BASE_URL = "http://www.google.com/"; // TODO:
 
     private final Consumer<String> resultManager;
 
+    /**
+     * Builds a new {@link GetTokenTask}.
+     * @param resultManager a {@link Consumer} used for managing the result of the {@link GetTokenTask}
+     */
     public GetTokenTask(final Consumer<String> resultManager) {
         this.resultManager = resultManager;
     }
@@ -26,10 +32,11 @@ public class GetTokenTask extends AsyncTask<Void, Void, String> {
     @Override
     protected String doInBackground(final Void... voids) {
         try {
-            // TODO: put conn.disconnect() to free resources
             Log.d(TAG, "Creating HTTPUrlConnection");
-            final HttpURLConnection conn = (HttpURLConnection) new URL(REQUEST_URL).openConnection();
+            final HttpURLConnection conn
+                    = (HttpURLConnection) new URL(BASE_URL + ServiceMessage.GET_TOKEN.getMessage()).openConnection();
             final Optional<InputStream> in = HTTPConnectionMethods.GET.doRequest(conn, Optional.empty());
+            conn.disconnect();
             if (in.isPresent()) {
                 return readStream(in.get());
             }
@@ -45,7 +52,6 @@ public class GetTokenTask extends AsyncTask<Void, Void, String> {
     }
 
     private String readStream(final InputStream in) {
-        // TODO: maybe move it somewhere common?
         try (final BufferedReader br = new BufferedReader(new InputStreamReader(in))) {
             final StringBuilder sb = new StringBuilder();
             String s = br.readLine();
