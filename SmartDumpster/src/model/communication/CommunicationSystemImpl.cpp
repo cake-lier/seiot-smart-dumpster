@@ -1,4 +1,4 @@
-#include "SoftwareSerial.h"
+#include <SoftwareSerial.h>
 #include "CommunicationSystemImpl.h"
 
 CommunicationSystemImpl::CommunicationSystemImpl(const int txPin, const int rxPin, MessageParser *parser) {
@@ -26,9 +26,4 @@ Message CommunicationSystemImpl::getMessage() {
 
 void CommunicationSystemImpl::sendMessage(const Message message) {
     this->btChannel->println(this->parser->parseMsgToStr(message));
-}
-
-// DEBUG:
-void CommunicationSystemImpl::voided() {
-    Serial.println("voided");
 }

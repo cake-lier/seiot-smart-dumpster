@@ -2,7 +2,6 @@
 #include "Message.h"
 
 // TODO: maybe use a bimap
-MessageParserImpl::MessageParserImpl(void) {}
 
 Message MessageParserImpl::parseStrToMsg(const String stringMessage) const {
     if (stringMessage == "A") {

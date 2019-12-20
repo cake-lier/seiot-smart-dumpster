@@ -17,7 +17,6 @@ class CommunicationSystem {
          * Sends the given message.
          */
         virtual void sendMessage(Message) = 0;
-        virtual void voided() = 0; // DEBUG:
 };
 
 #endif

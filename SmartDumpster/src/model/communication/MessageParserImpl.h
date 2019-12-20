@@ -1,3 +1,6 @@
+#ifndef __MESSAGE_PARSER_IMPL__
+#define __MESSAGE_PARSER_IMPL__
+
 #include "MessageParser.h"
 
 /*
@@ -8,7 +11,7 @@ class MessageParserImpl : public MessageParser {
         /* 
          * Default constructor.
          */
-        MessageParserImpl(void);
+        MessageParserImpl(void) {}
         /*
          * Default destructor.
          */
@@ -22,3 +25,5 @@ class MessageParserImpl : public MessageParser {
          */
         String parseMsgToStr(const Message message) const override;
 };
+
+#endif
