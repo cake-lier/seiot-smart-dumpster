@@ -2,10 +2,7 @@
 #ifndef __SYSTEM_CONTEXT__
 #define __SYSTEM_CONTEXT__
 
-#include "SystemState.h"
-#include "src/model/physics/PhysicalSystem.h"
-#include "src/model/console/Console.h"
-#include "src/controller/Scheduler.h"
+#include "src/controller/EventScheduler.h"
 
 /*
  * The class encompassing the entire system the Arduino should run. It's made of physical components all grouped
@@ -19,10 +16,6 @@ class SystemContext {
          * same Arduino.
          */
         static SystemContext *getInstance(void);
-        /*
-         * Static method to be called before starting to run the system. It initializes it.
-         */
-        static void init(void);
         /*
          * It executes the logic of the system one step at a time. It should be put into an endless loop.
          */
@@ -38,11 +31,7 @@ class SystemContext {
          * endlessly run, there is no need to make it public.
          */
         ~SystemContext(void);
-        static SystemContext *SINGLETON;
-        SystemState systemState;
-        PhysicalSystem *physicalSystem;
-        Scheduler *scheduler;
-        Console *console;
+        EventScheduler * const scheduler;
 };
 
 #endif
