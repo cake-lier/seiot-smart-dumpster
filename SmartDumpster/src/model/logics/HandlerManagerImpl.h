@@ -3,13 +3,14 @@
 
 #include "HandlerManager.h"
 #include "../physics/PhysicalSystem.h"
+#include "../communication/CommunicationSystem.h"
 
 class HandlerManagerImpl : public HandlerManager {
     public:
         /*
          * Default constructor.
          */
-        HandlerManagerImpl(PhysicalSystem *system, unsigned int *openTime);
+        HandlerManagerImpl(PhysicalSystem *system, CommunicationSystem *commSystem, unsigned int *openTime);
         /*
          * Default destructor.
          */
@@ -20,6 +21,7 @@ class HandlerManagerImpl : public HandlerManager {
         void runEventHandler(Event) override;
     private:
         PhysicalSystem *physicalSystem;
+        CommunicationSystem *commSystem;
         unsigned int *openTime;
 };
 

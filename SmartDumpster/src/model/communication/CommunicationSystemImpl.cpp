@@ -1,5 +1,5 @@
+#include "SoftwareSerial.h"
 #include "CommunicationSystemImpl.h"
-#include <SoftwareSerial.h>
 
 CommunicationSystemImpl::CommunicationSystemImpl(const int txPin, const int rxPin, MessageParser *parser) {
     this->btChannel = new SoftwareSerial(txPin, rxPin);
@@ -17,7 +17,8 @@ bool CommunicationSystemImpl::isAvailable() {
 Message CommunicationSystemImpl::getMessage() {
     // only single character messages are considered in this system
     if (this->isAvailable()) {
-        return this->parser->parseStrToMsg(String((char) this->btChannel->read()));
+        String str = String((char) this->btChannel->read());
+        return this->parser->parseStrToMsg(str);
     } else {
         return Message::EMPTY;
     }
@@ -25,4 +26,9 @@ Message CommunicationSystemImpl::getMessage() {
 
 void CommunicationSystemImpl::sendMessage(const Message message) {
     this->btChannel->println(this->parser->parseMsgToStr(message));
+}
+
+// DEBUG:
+void CommunicationSystemImpl::voided() {
+    Serial.println("voided");
 }

@@ -27,6 +27,7 @@ class CommunicationSystemImpl : public CommunicationSystem {
          * Sends the given message.
          */
         void sendMessage(Message) override;
+        void voided() override; // DEBUG:
     private:
         SoftwareSerial *btChannel;
         MessageParser *parser;
