@@ -1,5 +1,6 @@
 /* Authors: Matteo Castellucci, Giorgia Rondinini */
 #include "ServoMotorImpl.h"
+#include <Arduino.h>
 #include <cmath>
 
 #define MIN_PULSE 544.0F
@@ -10,7 +11,7 @@
 
 ServoMotorImpl::ServoMotorImpl(const int pin) {
     this->pin = pin;
-    this->motor = new ServoTimer2();
+    this->motor = new Servo();
     this->currentDegree = -1;
 }
 

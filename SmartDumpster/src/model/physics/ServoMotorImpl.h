@@ -3,7 +3,7 @@
 #define __SERVO_MOTOR_IMPL__
 
 #include "ServoMotor.h"
-#include "../../lib/ServoTimer2.h"
+#include <Servo.h>
 
 /*
  * It represents a servomotor, a linear actuator that can rotate to a precise angle upon command in the interval
@@ -40,7 +40,7 @@ class ServoMotorImpl : public ServoMotor {
          */
         void turnOff(void);
     private:
-        ServoTimer2 *motor;
+        Servo *motor;
         int pin;
         int currentDegree;
 };
