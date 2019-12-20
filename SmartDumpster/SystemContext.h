@@ -2,10 +2,10 @@
 #ifndef __SYSTEM_CONTEXT__
 #define __SYSTEM_CONTEXT__
 
-#include "SystemState.h"
 #include "src/model/physics/PhysicalSystem.h"
-#include "src/model/console/Console.h"
-#include "src/controller/Scheduler.h"
+#include "src/model/communication/CommunicationSystem.h"
+#include "src/model/logics/HandlerManager.h"
+#include "src/model/logics/EventGenerator.h"
 
 /*
  * The class encompassing the entire system the Arduino should run. It's made of physical components all grouped
@@ -39,10 +39,12 @@ class SystemContext {
          */
         ~SystemContext(void);
         static SystemContext *SINGLETON;
-        SystemState systemState;
         PhysicalSystem *physicalSystem;
-        Scheduler *scheduler;
-        Console *console;
+        CommunicationSystem *commSystem;
+        HandlerManager *handlerManager;
+        EventGenerator *eventGenerator;
+        unsigned int openTime;
+        unsigned int lastCheckedTime;
 };
 
 #endif

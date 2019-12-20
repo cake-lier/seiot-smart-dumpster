@@ -1,16 +1,16 @@
 /* Authors: Matteo Castellucci, Giorgia Rondinini */
 #include "SystemContext.h"
-#include "src/model/console/ConsoleImpl.h"
+#include "src/model/communication/MessageParserImpl.h"
+#include "src/model/communication/CommunicationSystemImpl.h"
 #include "src/model/physics/PhysicalSystemImpl.h"
-#include "src/controller/SchedulerImpl.h"
-#include "src/model/logics/CheckChangeModeTask.h"
-#include "src/model/logics/ManualModeTask.h"
-#include "src/model/logics/SingleModeTask.h"
-#include "src/model/logics/AutoModeTask.h"
+#include "src/model/logics/HandlerManagerImpl.h"
+#include "src/model/logics/EventGeneratorImpl.h"
 #include <Arduino.h>
 
-#define WARM_UP_TIME 1000UL   // milliseconds
-#define PERIOD 125UL          // milliseconds
+#define BT_RX 3
+#define BT_TX 2
+#define OPEN_TIME 60000 // milliseconds
+#define PERIOD 125 // milliseconds
 
 SystemContext *SystemContext::SINGLETON = nullptr;
 
@@ -19,33 +19,28 @@ SystemContext *SystemContext::getInstance(void) {
 }
 
 SystemContext::SystemContext(void) {
-    this->systemState = SystemState::MANUAL_MODE;
     this->physicalSystem = new PhysicalSystemImpl();
-    this->scheduler = new SchedulerImpl();
-    this->console = new ConsoleImpl();
-    this->scheduler->addTask(new CheckChangeModeTask(&systemState, physicalSystem, console));
-    this->scheduler->addTask(new ManualModeTask(&systemState, physicalSystem, console));
-    this->scheduler->addTask(new SingleModeTask(&systemState, physicalSystem, console));
-    this->scheduler->addTask(new AutoModeTask(&systemState, physicalSystem, console));
-    for (int i = 0; i < 10; i++)  {
-        delay(WARM_UP_TIME); // calibrating pir
-    }
+    this->commSystem = new CommunicationSystemImpl(BT_TX, BT_RX, new MessageParserImpl());
+    this->handlerManager = new HandlerManagerImpl(this->physicalSystem, &(this->openTime));
+    this->eventGenerator = new EventGeneratorImpl();
+    this->openTime = 0;
+    this->lastCheckedTime = millis();
 }
 
 SystemContext::~SystemContext(void) {
     delete this->physicalSystem;
-    delete this->scheduler;
-    delete this->console;
+    delete this->commSystem;
 }
 
 void SystemContext::run(void) {
+    // TODO:
+    Message msg = this->commSystem->getMessage();
+    this->handlerManager->runEventHandler(this->eventGenerator->generateEventFromMessage(msg));
     const unsigned long int t0 = millis();
-    this->scheduler->schedule();
-    delay(PERIOD - (millis() - t0));
+    this->openTime = this->openTime + (t0 - this->lastCheckedTime);
+    this->lastCheckedTime = t0;
+    delay(PERIOD);
 }
 
 void SystemContext::init(void) {
-    if (SINGLETON == nullptr) {
-        SINGLETON = new SystemContext();
-    }
 }
