@@ -34,6 +34,7 @@ class EventSchedulerImpl: public EventScheduler {
         const Service * const service;
         bool isAvailable;
         bool isWeightPolling;
+        int currentWeight;
 };
 
 #endif
