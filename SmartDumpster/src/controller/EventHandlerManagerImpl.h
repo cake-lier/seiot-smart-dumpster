@@ -21,6 +21,10 @@ class EventHandlerManagerImpl: public EventHandlerManager {
         /*
          * 
          */
+        bool isNextEventAvailable(void) const override;
+        /*
+         * 
+         */
         const Event *getNextEvent(void) override;
         /*
          * 

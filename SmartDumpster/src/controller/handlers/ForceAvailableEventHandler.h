@@ -14,7 +14,7 @@ class ForceAvailableEventHandler: public AbstractEventHandler {
         /*
          * 
          */
-        ForceAvailableEventHandler(PhysicalSystem &physics, const Service &service, bool &isAvailable);
+        ForceAvailableEventHandler(PhysicalSystem &physics, const Service &service, bool &isAvailable, int &currentWeight);
         /*
          * Default destructor.
          */
@@ -27,6 +27,7 @@ class ForceAvailableEventHandler: public AbstractEventHandler {
         PhysicalSystem &physics;
         const Service &service;
         bool &isAvailable;
+        int &currentWeight;
 };
 
 #endif

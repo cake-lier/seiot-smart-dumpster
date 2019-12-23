@@ -14,7 +14,7 @@ class MessageImpl: public Message {
          */
         MessageImpl(const MessageType type,
                     const String resource,
-                    DynamicJsonDocument * const payload);
+                    const JsonDocument * const payload);
         /*
          * Default destructor.
          */
@@ -30,11 +30,11 @@ class MessageImpl: public Message {
         /*
          *
          */
-        DynamicJsonDocument &getPayload(void) const override;
+        const JsonDocument &getPayload(void) const override;
     private:
         const MessageType type;
         const String resource;
-        DynamicJsonDocument * const payload;
+        const JsonDocument * const payload;
 };
 
 #endif

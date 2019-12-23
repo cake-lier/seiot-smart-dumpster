@@ -18,13 +18,11 @@ class Service {
         /*
          *
          */
-        virtual const Message *receiveMessage(void) const = 0;
+        virtual const Message *receiveMessage(void) = 0;
         /*
          *
          */
-        virtual void sendMessage(const MessageType type,
-                                 const int code,
-                                 const DynamicJsonDocument payload) const = 0;
+        virtual String sendMessage(const MessageType type, const String resource, const JsonDocument &payload) const = 0;
         /*
          * Default destructor.
          */

@@ -31,7 +31,7 @@ class EventSchedulerImpl: public EventScheduler {
     private:
         EventHandlerManager * const manager;
         PhysicalSystem * const physics;
-        const Service * const service;
+        Service * const service;
         bool isAvailable;
         bool isWeightPolling;
         int currentWeight;

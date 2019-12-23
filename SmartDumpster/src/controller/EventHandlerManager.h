@@ -13,6 +13,10 @@ class EventHandlerManager {
         /*
          * 
          */
+        virtual bool isNextEventAvailable(void) const = 0;
+        /*
+         * 
+         */
         virtual const Event *getNextEvent(void) = 0;
         /*
          * 

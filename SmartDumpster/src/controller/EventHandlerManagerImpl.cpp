@@ -15,6 +15,13 @@ EventHandlerManagerImpl::~EventHandlerManagerImpl(void) {
     delete this->eventQueue;
 }
 
+bool EventHandlerManagerImpl::isNextEventAvailable(void) const {
+    noInterrupts();
+    bool available = this->eventQueue->size() != 0;
+    interrupts();
+    return available;
+}
+
 const Event *EventHandlerManagerImpl::getNextEvent(void) {
     noInterrupts();
     const Event * nextEvent = this->eventQueue->shift();

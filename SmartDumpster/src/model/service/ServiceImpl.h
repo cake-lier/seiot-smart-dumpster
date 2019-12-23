@@ -3,6 +3,7 @@
 #define __SERVICE_IMPL__
 
 #include "Service.h"
+#include <LinkedList.h>
 #include <ESP8266WebServer.h>
 
 /*
@@ -25,15 +26,14 @@ class ServiceImpl: public Service {
         /*
          *
          */
-        const Message *receiveMessage(void) const;
+        const Message *receiveMessage(void);
         /*
          *
          */
-        void sendMessage(const MessageType type,
-                         const int code,
-                         const DynamicJsonDocument payload) const;
+        String sendMessage(const MessageType type, const String resource, const JsonDocument &payload) const;
     private:
         ESP8266WebServer * const server;
+        LinkedList<const Message *> * const messageBox;
 };
 
 #endif

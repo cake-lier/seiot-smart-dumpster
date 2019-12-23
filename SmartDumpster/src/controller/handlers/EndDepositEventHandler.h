@@ -4,6 +4,7 @@
 
 #include "AbstractEventHandler.h"
 #include "../../model/service/Service.h"
+#include "../../model/physics/PhysicalSystem.h"
 
 /*
  * 
@@ -13,7 +14,11 @@ class EndDepositEventHandler: public AbstractEventHandler {
         /*
          * 
          */
-        EndDepositEventHandler(const Service &service, bool &isAvailable, bool &isWeightPolling, const int &currentWeight);
+        EndDepositEventHandler(const PhysicalSystem &physics,
+                               const Service &service,
+                               bool &isAvailable,
+                               bool &isWeightPolling,
+                               int &currentWeight);
         /*
          * Default destructor.
          */
@@ -23,8 +28,9 @@ class EndDepositEventHandler: public AbstractEventHandler {
          */
         void execute(void) const override;
     private:
+        const PhysicalSystem &physics;
         const Service &service;
-        const int &currentWeight;
+        int &currentWeight;
         bool &isAvailable;
         bool &isWeightPolling;
 };

@@ -6,8 +6,8 @@
  * 
  */
 enum class MessageType { 
-    GET,
-    PUT,
+    READ,
+    MODIFY,
     RESPONSE
 };
 

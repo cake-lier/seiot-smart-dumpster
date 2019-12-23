@@ -17,6 +17,10 @@ class SystemContext {
          */
         static SystemContext *getInstance(void);
         /*
+         * Static method to be called before starting to run the system. It initializes it.
+         */
+        static void init(void);
+        /*
          * It executes the logic of the system one step at a time. It should be put into an endless loop.
          */
         void run(void);
@@ -31,6 +35,7 @@ class SystemContext {
          * endlessly run, there is no need to make it public.
          */
         ~SystemContext(void);
+        static SystemContext *SINGLETON;
         EventScheduler * const scheduler;
 };
 

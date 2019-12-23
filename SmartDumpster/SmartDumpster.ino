@@ -1,6 +1,7 @@
 #include "SmartDumpster.h"
 
 void setup() {
+    SystemContext::init();
     context = SystemContext::getInstance();
 }
 

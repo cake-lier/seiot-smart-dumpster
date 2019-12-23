@@ -21,7 +21,7 @@ class Message {
         /*
          *
          */
-        virtual DynamicJsonDocument &getPayload(void) const = 0;
+        virtual const JsonDocument &getPayload(void) const = 0;
         /*
          * Default destructor.
          */

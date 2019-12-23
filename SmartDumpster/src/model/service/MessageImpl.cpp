@@ -2,7 +2,7 @@
 
 MessageImpl::MessageImpl(const MessageType type,
                          const String resource,
-                         DynamicJsonDocument * const payload)
+                         const JsonDocument * const payload)
     : type(type), resource(resource), payload(payload) {}
 
 MessageImpl::~MessageImpl(void) {
@@ -17,6 +17,6 @@ String MessageImpl::getResource(void) const {
     return this->resource;
 }
 
-DynamicJsonDocument &MessageImpl::getPayload(void) const {
+const JsonDocument &MessageImpl::getPayload(void) const {
     return *this->payload;
 }
