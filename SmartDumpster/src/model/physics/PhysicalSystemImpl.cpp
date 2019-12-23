@@ -6,8 +6,8 @@
 
 /* pins */
 #define POT_PIN A0
-#define LA_PIN D2
-#define LNA_PIN D0
+#define LA_PIN D3
+#define LNA_PIN D1
 /* constants */
 #define WEIGHT_MIN 1
 #define WEIGHT_MAX 100

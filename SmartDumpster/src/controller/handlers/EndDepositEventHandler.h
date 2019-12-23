@@ -14,7 +14,7 @@ class EndDepositEventHandler: public AbstractEventHandler {
         /*
          * 
          */
-        EndDepositEventHandler(const PhysicalSystem &physics,
+        EndDepositEventHandler(PhysicalSystem &physics,
                                const Service &service,
                                bool &isAvailable,
                                bool &isWeightPolling,
@@ -28,7 +28,7 @@ class EndDepositEventHandler: public AbstractEventHandler {
          */
         void execute(void) const override;
     private:
-        const PhysicalSystem &physics;
+        PhysicalSystem &physics;
         const Service &service;
         int &currentWeight;
         bool &isAvailable;

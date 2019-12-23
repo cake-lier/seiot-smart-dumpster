@@ -23,10 +23,6 @@ class EventSchedulerImpl: public EventScheduler {
         /*
          * 
          */
-        void init(void) override;
-        /*
-         * 
-         */
         void step(void) override;
     private:
         EventHandlerManager * const manager;

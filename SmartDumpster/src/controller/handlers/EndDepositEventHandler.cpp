@@ -1,7 +1,7 @@
 #include "EndDepositEventHandler.h"
 #include "../../model/physics/PhysicsConstants.h"
 
-EndDepositEventHandler::EndDepositEventHandler(const PhysicalSystem &physics,
+EndDepositEventHandler::EndDepositEventHandler(PhysicalSystem &physics,
                                                const Service &service,
                                                bool &isAvailable,
                                                bool &isWeightPolling,
@@ -12,14 +12,20 @@ EndDepositEventHandler::EndDepositEventHandler(const PhysicalSystem &physics,
 EndDepositEventHandler::~EndDepositEventHandler(void) {}
 
 void EndDepositEventHandler::execute(void) const {
-    this->isWeightPolling = false;
-    int weightWaiting = this->physics.getWeight();
-    if (weightWaiting + this->currentWeight >= MAX_WEIGHT) {
-        this->isAvailable = false;
-    }
     DynamicJsonDocument messageBody(47);
-    messageBody["success"] = true;
-    messageBody["weight"] = weightWaiting;
+    if (this->isWeightPolling) {
+        this->isWeightPolling = false;
+        int weightWaiting = this->physics.getWeight();
+        if (weightWaiting + this->currentWeight >= MAX_WEIGHT) {
+            this->isAvailable = false;
+            this->physics.turnOffAvailableLed();
+            this->physics.turnOnNotAvailableLed();
+        }
+        this->currentWeight += weightWaiting;
+        messageBody["success"] = true;
+        messageBody["weight"] = weightWaiting;
+    } else {
+        messageBody["success"] = false;
+    }
     this->service.sendMessage(MessageType::RESPONSE, "/deposit", messageBody);
-    this->currentWeight += weightWaiting;
 }

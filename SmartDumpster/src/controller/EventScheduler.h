@@ -10,10 +10,6 @@ class EventScheduler {
         /*
          * 
          */
-        virtual void init(void) = 0;
-        /*
-         * 
-         */
         virtual void step(void) = 0;
         /*
          * Default destructor.

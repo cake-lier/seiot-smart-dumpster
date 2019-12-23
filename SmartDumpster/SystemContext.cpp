@@ -12,15 +12,12 @@ SystemContext *SystemContext::getInstance(void) {
 }
 
 void SystemContext::init(void) {
-    Serial.begin(115200);
     if (SINGLETON == nullptr) {
         SINGLETON = new SystemContext();
     }
 }
 
-SystemContext::SystemContext(void): scheduler(new EventSchedulerImpl()) {
-    this->scheduler->init();
-}
+SystemContext::SystemContext(void): scheduler(new EventSchedulerImpl()) {}
 
 SystemContext::~SystemContext(void) {
     delete this->scheduler;
@@ -29,6 +26,5 @@ SystemContext::~SystemContext(void) {
 void SystemContext::run(void) {
     const unsigned long int t0 = millis();
     this->scheduler->step();
-    Serial.println(millis() - t0);
     delay(PERIOD - (millis() - t0));
 }

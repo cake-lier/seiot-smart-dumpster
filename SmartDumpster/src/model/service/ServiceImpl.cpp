@@ -17,12 +17,9 @@
 ServiceImpl::ServiceImpl(void) 
     : server(new ESP8266WebServer(PORT)), messageBox(new LinkedList<const Message *>()) {
     WiFi.begin(SSID, PSWD);
-    Serial.println("Connecting to WiFi");
     while (WiFi.status() != WL_CONNECTED) {
         delay(500);
-        Serial.print(".");
     }
-    Serial.println(WiFi.localIP());
     this->server->on(STATUS_URI, HTTPMethod::HTTP_GET, [&]() -> void {
         StaticJsonDocument<0> * const doc = new StaticJsonDocument<0>();
         this->messageBox->add(new MessageImpl(MessageType::READ, STATUS_URI, doc));

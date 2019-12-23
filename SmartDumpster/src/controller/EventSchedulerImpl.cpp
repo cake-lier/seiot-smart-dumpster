@@ -18,15 +18,6 @@ EventSchedulerImpl::EventSchedulerImpl(void)
     this->isWeightPolling = false;
     this->currentWeight = 0;
     this->physics->turnOnAvailableLed();
-}
-
-EventSchedulerImpl::~EventSchedulerImpl(void) {
-    delete this->manager;
-    delete this->physics;
-    delete this->service;
-}
-
-void EventSchedulerImpl::init(void) {
     this->manager->addEventHandler(new ForceAvailableEventHandler(*this->physics,
                                                                   *this->service,
                                                                   this->isAvailable,
@@ -41,9 +32,15 @@ void EventSchedulerImpl::init(void) {
                                                               this->currentWeight));
 }
 
+EventSchedulerImpl::~EventSchedulerImpl(void) {
+    delete this->manager;
+    delete this->physics;
+    delete this->service;
+}
+
 void EventSchedulerImpl::step(void) {
     // Message transformation into events
-    while (this->service->isMessageAvailable()) {
+    if (this->service->isMessageAvailable()) {
         const Message * const msg = this->service->receiveMessage();
         if (msg->getResource() == "/state") {
             if (msg->getType() == MessageType::READ) {
@@ -73,12 +70,13 @@ void EventSchedulerImpl::step(void) {
             this->service->sendMessage(MessageType::MODIFY, "/deposit", messageBody);
             this->isWeightPolling = false;
             this->isAvailable = false;
+            this->physics->turnOffAvailableLed();
+            this->physics->turnOnNotAvailableLed();
             this->currentWeight += weightWaiting;
         }
     }
     // Handling of next event
     if (this->manager->isNextEventAvailable()) {
-        Serial.println("Alert");
         this->manager->triggerHandlers(this->manager->getNextEvent());
     }
 }
