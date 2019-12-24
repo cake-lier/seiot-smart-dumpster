@@ -5,14 +5,16 @@ import android.util.Log;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Optional;
 
 /**
  * An {@link AsyncTask} used for sending messages to the service server.
  */
-public class SendMessageToServiceTask extends AsyncTask<String, Void, Boolean> {
+public class SendMessageToServiceTask extends AsyncTask<ServiceMessage, Void, Boolean> {
 
     private static final String TAG = "SmartDumpsterApp_HTTPConnection";
     private static final String BASE_URL = "http://www.google.com"; // TODO:
@@ -24,20 +26,23 @@ public class SendMessageToServiceTask extends AsyncTask<String, Void, Boolean> {
     }
 
     @Override
-    protected Boolean doInBackground(final String... strings) {
-        try {
-            // TODO: put conn.disconnect() to free resources
-            Log.d(TAG, "Creating HTTPUrlConnection");
-            final HttpURLConnection conn = (HttpURLConnection) new URL(BASE_URL).openConnection();
-            return Arrays.stream(strings)
-                         .map(String::getBytes)
-                         .map(Optional::of)
-                         .map(p ->HTTPConnectionMethods.POST.doRequest(conn, p))
-                         .allMatch(Optional::isPresent);
-            // this way there is no way to understand which message didn't work
-        } catch (IOException e) {
-            Log.e(TAG, e.getMessage());
-        }
-        return false;
+    protected Boolean doInBackground(final ServiceMessage... messages) {
+        // TODO: put conn.disconnect() to free resources
+        Log.d(TAG, "Creating HTTPUrlConnection");
+        return Arrays.stream(messages)
+                     .map(m -> {
+                         try {
+                             return m.getMethod()
+                                     .doRequest((HttpURLConnection) new URL(BASE_URL + m.getPath()).openConnection(),
+                                                m.getMessage()
+                                                 .map(j -> j.toString()
+                                                            .getBytes(Charset.forName("UTF-8"))));
+                         } catch (final IOException e) {
+                             Log.e(TAG, e.getMessage());
+                         }
+                         return Optional.empty();
+                     })
+                     .allMatch(Optional::isPresent);
+        // this way there is no way to understand which message didn't work
     }
 }

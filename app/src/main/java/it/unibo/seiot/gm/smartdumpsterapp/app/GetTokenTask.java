@@ -3,12 +3,16 @@ package it.unibo.seiot.gm.smartdumpsterapp.app;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -34,13 +38,18 @@ public class GetTokenTask extends AsyncTask<Void, Void, String> {
         try {
             Log.d(TAG, "Creating HTTPUrlConnection");
             final HttpURLConnection conn
-                    = (HttpURLConnection) new URL(BASE_URL + ServiceMessage.GET_TOKEN.getMessage()).openConnection();
-            final Optional<InputStream> in = HTTPConnectionMethods.GET.doRequest(conn, Optional.empty());
+                    = (HttpURLConnection) new URL(BASE_URL + ServiceMessage.GET_TOKEN.getPath()).openConnection();
+            final Optional<InputStream> in =
+                    ServiceMessage.GET_TOKEN.getMethod()
+                                            .doRequest(conn,
+                                                       ServiceMessage.GET_TOKEN.getMessage()
+                                                                               .map(j -> j.toString()
+                                                                                          .getBytes(Charset.forName("UTF-8"))));
             conn.disconnect();
             if (in.isPresent()) {
-                return readStream(in.get());
+                return new JSONObject(readStream(in.get())).getString("token");
             }
-        } catch (IOException e) {
+        } catch (final IOException | JSONException e) {
             Log.e(TAG, e.getMessage());
         }
         return ""; // TODO:

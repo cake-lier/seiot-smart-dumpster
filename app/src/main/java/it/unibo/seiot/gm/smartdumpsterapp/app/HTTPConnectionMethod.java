@@ -12,7 +12,7 @@ import java.util.function.BiFunction;
 /**
  * An enum representing the possible ways a message using HTTP can be send.
  */
-public enum HTTPConnectionMethods {
+public enum HTTPConnectionMethod {
     /**
      * An HTTP GET request.
      */
@@ -25,10 +25,10 @@ public enum HTTPConnectionMethods {
                 return Optional.empty();
             }
         } catch (ProtocolException e) {
-            Log.e("Smart Dumpster App", "Problemi con il protocollo HTTP");
+            Log.e("SmartDumpsterApp_HTTPMethods", "Problemi con il protocollo HTTP");
             return Optional.empty();
         } catch (IOException e) {
-            Log.e("Smart Dumpster App", "Problemi con il risultato della comunicazione HTTP");
+            Log.e("SmartDumpsterApp_HTTPMethods", "Problemi con il risultato della comunicazione HTTP");
             return Optional.empty();
         }
     }),
@@ -48,17 +48,37 @@ public enum HTTPConnectionMethods {
                 return Optional.empty();
             }
         } catch (ProtocolException e) {
-            Log.e("Smart Dumpster App", "Problemi con il protocollo HTTP");
+            Log.e("SmartDumpsterApp_HTTPMethods", "Problemi con il protocollo HTTP");
             return Optional.empty();
         } catch (IOException e) {
-            Log.e("Smart Dumpster App", "Problemi con il risultato della comunicazione HTTP");
+            Log.e("SmartDumpsterApp_HTTPMethods", "Problemi con il risultato della comunicazione HTTP");
+            return Optional.empty();
+        }
+    }),
+    PUT((c, p) -> {
+        try {
+            c.setRequestMethod("PUT");
+            c.setDoOutput(true);
+            if (p.isPresent()) {
+                c.getOutputStream().write(p.get());
+            }
+            if (c.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                return Optional.of(c.getInputStream());
+            } else {
+                return Optional.empty();
+            }
+        } catch (ProtocolException e) {
+            Log.e("SmartDumpsterApp_HTTPMethods", "Problemi con il protocollo HTTP");
+            return Optional.empty();
+        } catch (IOException e) {
+            Log.e("SmartDumpsterApp_HTTPMethods", "Problemi con il risultato della comunicazione HTTP");
             return Optional.empty();
         }
     });
 
     private BiFunction<HttpURLConnection, Optional<byte[]>, Optional<InputStream>> function;
 
-    HTTPConnectionMethods(final BiFunction<HttpURLConnection, Optional<byte[]>, Optional<InputStream>> function) {
+    HTTPConnectionMethod(final BiFunction<HttpURLConnection, Optional<byte[]>, Optional<InputStream>> function) {
         this.function = function;
     }
 

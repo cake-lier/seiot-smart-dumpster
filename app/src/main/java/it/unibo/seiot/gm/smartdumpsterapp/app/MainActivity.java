@@ -38,6 +38,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "SmartDumpsterApp_Main";
 
     private Optional<BluetoothChannel> btChannel;
+    private String token;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
         connectBtn.setOnClickListener(this::blConnect);
         /* Request token button */
         final Button tokenBtn = (Button) findViewById(R.id.askTokenButton);
-        tokenBtn.setEnabled(false);
+        tokenBtn.setEnabled(true);
         tokenBtn.setOnClickListener(this::requestToken);
         /* Trash type 1 button */
         final Button trash1Btn = (Button) findViewById(R.id.trashType1Button);
@@ -115,12 +116,12 @@ public class MainActivity extends AppCompatActivity {
                             final String parsedMessage = receivedMessage.replaceAll("(\\r|\\n)", "");
                             if (parsedMessage.equals(ControllerMessage.START_DEPOSIT.getMessage())) {
                                 // the deposit started, the trash type can't be changed
-                                new SendMessageToServiceTask().execute(ServiceMessage.START_DEPOSIT.getMessage());
+                                new SendMessageToServiceTask().execute(ServiceMessage.START_DEPOSIT);
                                 disableTrashButtons();
                                 ((Button) findViewById(R.id.askTokenButton)).setEnabled(false);
                             } else if (parsedMessage.equals(ControllerMessage.STOP_DEPOSIT.getMessage())) {
                                 // the deposit ended, a new token can be requested
-                                new SendMessageToServiceTask().execute(ServiceMessage.STOP_DEPOSIT.getMessage());
+                                new SendMessageToServiceTask().execute(ServiceMessage.STOP_DEPOSIT);
                                 ((Button) findViewById(R.id.keepOpenButton)).setEnabled(false);
                                 ((Button) findViewById(R.id.askTokenButton)).setEnabled(true);
                             } else {
@@ -158,6 +159,7 @@ public class MainActivity extends AppCompatActivity {
         ((TextView) findViewById(R.id.tokenText)).setText(REQUESTING_STR);
         new GetTokenTask(s -> {
             ((TextView) findViewById(R.id.tokenText)).setText(s);
+            this.token = s;
             this.enableTrashButtons();
         }).execute();
     }
