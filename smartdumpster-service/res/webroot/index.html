@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+      <title>Smart dumpster dashboard</title>
+      <meta charset="UTF-8" />
+      <link rel="stylesheet" type="text/css" href="style.css">
+      <script type="text/javascript"
+              src="https://code.jquery.com/jquery-3.4.1.min.js"
+			  integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+			  crossorigin="anonymous"></script>
+      <script type="text/javascript" src="get_info.js"></script>
+    </head>
+    <body>
+        <section>
+            <h1>Current status</h1>
+            <section id="available">
+                <h2>Availability</h2>
+                <p>Service unreachable</p>
+            </section>
+            <section id="count">
+                <h2>Daily deposits</h2>
+                <p>Service unreachable</p>
+            </section>
+            <section id="weight">
+                <h2>Weight currently held</h2>
+                <p>Service unreachable</p>
+            </section>
+        </section>
+        <section>
+            <a href="#" id="availableButton">Force available</a>
+            <a href="#" id="unavailableButton">Force unavailable</a>
+        </section>
+        <section>
+            <a href="#" id="logButton">See the data about the last days</a>
+        </section>
+    </body>
+</html>

@@ -1,1 +1,10 @@
 .vscode
+.settings
+.checkstyle
+.classpath
+.ruleset
+pmd.xml
+style.xml
+.pmd
+.project
+smartdumpster-service/target
