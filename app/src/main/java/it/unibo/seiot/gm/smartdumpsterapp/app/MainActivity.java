@@ -12,8 +12,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-import java.net.MalformedURLException;
-import java.util.Arrays;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -116,14 +115,24 @@ public class MainActivity extends AppCompatActivity {
                             final String parsedMessage = receivedMessage.replaceAll("(\\r|\\n)", "");
                             if (parsedMessage.equals(ControllerMessage.START_DEPOSIT.getMessage())) {
                                 // the deposit started, the trash type can't be changed
-                                new SendMessageToServiceTask().execute(ServiceMessage.START_DEPOSIT);
-                                disableTrashButtons();
-                                ((Button) findViewById(R.id.askTokenButton)).setEnabled(false);
+                                final ServiceMessageBuilder builder = new ServiceMessageBuilder(ServiceMessageType.START_DEPOSIT);
+                                builder.setToken(token)
+                                       .setDepositPhase("begin")
+                                       .build()
+                                       .send(s -> {
+                                           disableTrashButtons();
+                                           ((Button) findViewById(R.id.askTokenButton)).setEnabled(false);
+                                       }); // TODO: this "blocks" the app if the service doesn't respond
                             } else if (parsedMessage.equals(ControllerMessage.STOP_DEPOSIT.getMessage())) {
                                 // the deposit ended, a new token can be requested
-                                new SendMessageToServiceTask().execute(ServiceMessage.STOP_DEPOSIT);
-                                ((Button) findViewById(R.id.keepOpenButton)).setEnabled(false);
-                                ((Button) findViewById(R.id.askTokenButton)).setEnabled(true);
+                                final ServiceMessageBuilder builder = new ServiceMessageBuilder(ServiceMessageType.START_DEPOSIT);
+                                builder.setToken(token)
+                                       .setDepositPhase("end")
+                                       .build()
+                                       .send(s -> {
+                                           ((Button) findViewById(R.id.keepOpenButton)).setEnabled(false);
+                                           ((Button) findViewById(R.id.askTokenButton)).setEnabled(true);
+                                       }); // TODO: this "blocks" the app if the service doesn't respond
                             } else {
                                 Log.d(TAG, "received ASCII " + receivedMessage.chars().boxed().collect(Collectors.toList()));
                             }
@@ -157,11 +166,17 @@ public class MainActivity extends AppCompatActivity {
 
     private void requestToken(final View v) {
         ((TextView) findViewById(R.id.tokenText)).setText(REQUESTING_STR);
-        new GetTokenTask(s -> {
-            ((TextView) findViewById(R.id.tokenText)).setText(s);
-            this.token = s;
-            this.enableTrashButtons();
-        }).execute();
+        new ServiceMessageBuilder(ServiceMessageType.START_DEPOSIT).setToken(token)
+                                                                   .setDepositPhase("begin")
+                                                                   .build()
+                                                                   .send(j -> {
+                                                                        final String s = j.optString("token");
+                                                                        if (Objects.nonNull(s)) {
+                                                                            ((TextView) findViewById(R.id.tokenText)).setText(s);
+                                                                            this.token = s;
+                                                                            this.enableTrashButtons();
+                                                                        }
+                                                                   });
     }
 
     private void askKeepOpen(final View v) {
