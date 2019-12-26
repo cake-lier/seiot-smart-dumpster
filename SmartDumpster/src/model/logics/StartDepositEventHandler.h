@@ -2,8 +2,8 @@
 #ifndef __START_DEPOSIT_EVENT_HANDLER__
 #define __START_DEPOSIT_EVENT_HANDLER__
 
-#include "AbstractEventHandler.h"
-#include "../../model/service/Service.h"
+#include "../../controller/handler/AbstractEventHandler.h"
+#include "../service/Service.h"
 
 /*
  * 

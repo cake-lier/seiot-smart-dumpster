@@ -2,9 +2,9 @@
 #ifndef __FORCE_UNAVAILABLE_EVENT_HANDLER__
 #define __FORCE_UNAVAILABLE_EVENT_HANDLER__
 
-#include "AbstractEventHandler.h"
-#include "../../model/physics/PhysicalSystem.h"
-#include "../../model/service/Service.h"
+#include "../../controller/handler/AbstractEventHandler.h"
+#include "../physics/PhysicalSystem.h"
+#include "../service/Service.h"
 
 /*
  * 

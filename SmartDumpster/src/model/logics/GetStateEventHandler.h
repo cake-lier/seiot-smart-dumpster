@@ -2,8 +2,8 @@
 #ifndef __GET_STATE_EVENT_HANDLER__
 #define __GET_STATE_EVENT_HANDLER__
 
-#include "AbstractEventHandler.h"
-#include "../../model/service/Service.h"
+#include "../../controller/handler/AbstractEventHandler.h"
+#include "../service/Service.h"
 
 /*
  * 
@@ -13,7 +13,7 @@ class GetStateEventHandler: public AbstractEventHandler {
         /*
          * 
          */
-        GetStateEventHandler(const Service &service, const bool &isAvailable);
+        GetStateEventHandler(const Service &service, const bool &isAvailable, const int &currentWeight);
         /*
          * Default destructor.
          */
@@ -25,6 +25,7 @@ class GetStateEventHandler: public AbstractEventHandler {
     private:
         const Service &service;
         const bool &isAvailable;
+        const int &currentWeight;
 };
 
 #endif

@@ -3,7 +3,7 @@
 #define __EVENT_HANDLER_MANAGER__
 
 #include "Event.h"
-#include "handlers/EventHandler.h"
+#include "handler/EventHandler.h"
 
 /*
  * 

@@ -2,9 +2,9 @@
 #ifndef __END_DEPOSIT_EVENT_HANDLER__
 #define __END_DEPOSIT_EVENT_HANDLER__
 
-#include "AbstractEventHandler.h"
-#include "../../model/service/Service.h"
-#include "../../model/physics/PhysicalSystem.h"
+#include "../../controller/handler/AbstractEventHandler.h"
+#include "../service/Service.h"
+#include "../physics/PhysicalSystem.h"
 
 /*
  * 

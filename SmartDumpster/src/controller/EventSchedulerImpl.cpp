@@ -3,11 +3,11 @@
 #include "EventHandlerManagerImpl.h"
 #include "../model/physics/PhysicalSystemImpl.h"
 #include "../model/service/ServiceImpl.h"
-#include "handlers/ForceAvailableEventHandler.h"
-#include "handlers/ForceUnavailableEventHandler.h"
-#include "handlers/GetStateEventHandler.h"
-#include "handlers/StartDepositEventHandler.h"
-#include "handlers/EndDepositEventHandler.h"
+#include "../model/logics/ForceAvailableEventHandler.h"
+#include "../model/logics/ForceUnavailableEventHandler.h"
+#include "../model/logics/GetStateEventHandler.h"
+#include "../model/logics/StartDepositEventHandler.h"
+#include "../model/logics/EndDepositEventHandler.h"
 #include "EventImpl.h"
 #include "EventType.h"
 #include "../model/physics/PhysicsConstants.h"
@@ -23,7 +23,7 @@ EventSchedulerImpl::EventSchedulerImpl(void)
                                                                   this->isAvailable,
                                                                   this->currentWeight));
     this->manager->addEventHandler(new ForceUnavailableEventHandler(*this->physics, *this->service, this->isAvailable));
-    this->manager->addEventHandler(new GetStateEventHandler(*this->service, this->isAvailable));
+    this->manager->addEventHandler(new GetStateEventHandler(*this->service, this->isAvailable, this->currentWeight));
     this->manager->addEventHandler(new StartDepositEventHandler(*this->service, this->isAvailable, this->isWeightPolling));
     this->manager->addEventHandler(new EndDepositEventHandler(*this->physics,
                                                               *this->service,
@@ -67,7 +67,7 @@ void EventSchedulerImpl::step(void) {
             DynamicJsonDocument messageBody(47);
             messageBody["success"] = true;
             messageBody["weight"] = weightWaiting;
-            this->service->sendMessage(MessageType::MODIFY, "/deposit", messageBody);
+            this->service->sendMessage(MessageType::MODIFY, "/deposit/early_end", messageBody);
             this->isWeightPolling = false;
             this->isAvailable = false;
             this->physics->turnOffAvailableLed();
