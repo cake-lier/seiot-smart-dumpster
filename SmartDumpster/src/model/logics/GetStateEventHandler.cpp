@@ -8,7 +8,7 @@ GetStateEventHandler::~GetStateEventHandler(void) {}
 void GetStateEventHandler::execute(void) const {
     DynamicJsonDocument messageBody(50);
     messageBody["available"] = this->isAvailable;
-    messageBody["currentWeight"] = this->currentWeight;
+    messageBody["weight"] = this->currentWeight;
     messageBody["success"] = true;
     this->service.sendMessage(MessageType::RESPONSE, "/state", messageBody);
 }

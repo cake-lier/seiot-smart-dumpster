@@ -65,7 +65,6 @@ void EventSchedulerImpl::step(void) {
         int weightWaiting = this->physics->getWeight();
         if (weightWaiting + this->currentWeight >= MAX_WEIGHT) {
             DynamicJsonDocument messageBody(47);
-            messageBody["success"] = true;
             messageBody["weight"] = weightWaiting;
             this->service->sendMessage(MessageType::MODIFY, "/deposit/early_end", messageBody);
             this->isWeightPolling = false;

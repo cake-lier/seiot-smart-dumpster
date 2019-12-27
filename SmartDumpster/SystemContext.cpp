@@ -24,7 +24,6 @@ SystemContext::~SystemContext(void) {
 }
 
 void SystemContext::run(void) {
-    const unsigned long int t0 = millis();
     this->scheduler->step();
-    delay(PERIOD - (millis() - t0));
+    delay(PERIOD);
 }

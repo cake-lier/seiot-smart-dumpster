@@ -12,7 +12,7 @@
 #define FIELD_ERROR "One or more fields are missing"
 #define TYPE_ERROR "One or more fields have an incorrect value type"
 #define REQUEST_ERROR "The request could not be fullfilled"
-#define SERVICE_URL "http://192.168.1.11"
+#define SERVICE_URL "http://192.168.1.11:8080"
 
 ServiceImpl::ServiceImpl(void) 
     : server(new ESP8266WebServer(PORT)), messageBox(new LinkedList<const Message *>()) {
@@ -91,7 +91,7 @@ String ServiceImpl::sendMessage(const MessageType type, const String resource, c
     if (type != MessageType::RESPONSE) {
         WiFiClient client;
         HTTPClient http;
-        http.begin(client, SERVICE_URL + resource);
+        http.begin(client, String(SERVICE_URL) + resource);
         if (type == MessageType::READ) {
             http.addHeader("Content-Type", "text/plain");
             http.GET();
