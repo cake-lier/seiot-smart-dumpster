@@ -32,6 +32,7 @@ import io.vertx.ext.web.handler.StaticHandler;
 public class ServiceHttpServer extends AbstractVerticle {
     private static final int PORT = 8080;
     private static final int N_DAYS = 5;
+    private static final long TOKEN_DURATION_MS = 1000 * 60 * 5;
     private static final String LOGS_PATH = System.getProperty("user.home")
                                             + System.getProperty("file.separator")
                                             + "logs"
@@ -55,9 +56,10 @@ public class ServiceHttpServer extends AbstractVerticle {
     private static final String BEGIN_DEPOSIT_JSON_VALUE = "begin";
     private static final String END_DEPOSIT_JSON_VALUE = "end";
 
+    private final DumpsterEdge edge;
     private Optional<ServiceHttpClient> client;
     private Optional<String> token;
-    private boolean lastDepositEarlyEnded;
+    private long currentTimerID;
 
     /**
      * 
@@ -66,7 +68,8 @@ public class ServiceHttpServer extends AbstractVerticle {
         super();
         this.client = Optional.empty();
         this.token = Optional.empty();
-        this.lastDepositEarlyEnded = false;
+        this.edge = new DumpsterEdgeImpl();
+        this.currentTimerID = 0;
     }
     /**
      * @throws Exception 
@@ -74,7 +77,7 @@ public class ServiceHttpServer extends AbstractVerticle {
     @Override
     public void start() throws Exception {
         super.start();
-        this.client = Optional.of(new ServiceHttpClient(this.vertx));
+        this.client = Optional.of(new ServiceHttpClient(this.vertx, this.edge));
         final Router router = Router.router(this.vertx);
         router.route().handler(BodyHandler.create());
         router.route(DASHBOARD_ALL_SUBROUTES).handler(StaticHandler.create());
@@ -139,7 +142,7 @@ public class ServiceHttpServer extends AbstractVerticle {
      */
     private void getToken(final RoutingContext routingContext) {
         final HttpServerResponse response = routingContext.response();
-        if (this.token.isPresent()) {
+        if (this.token.isPresent() || !this.edge.isStateAvailable()) {
             response.setStatusCode(HttpStatus.FORBIDDEN.getCode()).end();
             return;
         }
@@ -149,6 +152,13 @@ public class ServiceHttpServer extends AbstractVerticle {
                                         .toString());
         response.putHeader(HttpHeaders.CONTENT_TYPE, JSON_MIME_TYPE)
                 .end(new JsonObject().put(TOKEN_JSON_KEY, this.token.get()).encode());
+        this.currentTimerID = this.vertx.setTimer(TOKEN_DURATION_MS, id -> {
+            synchronized (this) {
+                if (!this.edge.hasDepositBegun()) {
+                    this.token = Optional.empty();
+                }
+            }
+        });
     }
     /**
      * 
@@ -169,19 +179,26 @@ public class ServiceHttpServer extends AbstractVerticle {
             response.setStatusCode(HttpStatus.BAD_REQUEST.getCode()).end();
             return;
         }
-        if (this.token.isEmpty() || !jsonRequest.getString(TOKEN_JSON_KEY).equals(this.token.get())) {
-            response.setStatusCode(HttpStatus.FORBIDDEN.getCode()).end();
-            return;
-        }
-        final String operation = jsonRequest.getString(DEPOSIT_JSON_KEY);
-        if (operation.equals(BEGIN_DEPOSIT_JSON_VALUE)) {
-            this.client.orElseThrow(IllegalStateException::new).beginDeposit(routingContext);
-        } else if (!this.lastDepositEarlyEnded) {
-            this.client.orElseThrow(IllegalStateException::new).endDeposit(routingContext);
-            this.token = Optional.empty();
-        } else {
-            this.lastDepositEarlyEnded = false;
-            response.setStatusCode(HttpStatus.OK.getCode()).end();
+        synchronized (this) {
+            if (this.token.isEmpty() || !jsonRequest.getString(TOKEN_JSON_KEY).equals(this.token.get())) {
+                response.setStatusCode(HttpStatus.FORBIDDEN.getCode()).end();
+                return;
+            }
+            final String operation = jsonRequest.getString(DEPOSIT_JSON_KEY);
+            if (operation.equals(BEGIN_DEPOSIT_JSON_VALUE)) {
+                this.vertx.cancelTimer(this.currentTimerID);
+                this.edge.beginDeposit();
+                this.client.orElseThrow(IllegalStateException::new).beginDeposit(routingContext);
+            } else {
+                this.token = Optional.empty();
+                if (!this.edge.hasLastDepositEarlyEnded()) {
+                    this.edge.endDeposit();
+                    this.client.orElseThrow(IllegalStateException::new).endDeposit(routingContext);
+                } else {
+                    this.edge.setEarlyEnd(false);
+                    response.setStatusCode(HttpStatus.OK.getCode()).end();
+                }
+            }
         }
     }
     /*
@@ -198,8 +215,7 @@ public class ServiceHttpServer extends AbstractVerticle {
             response.setStatusCode(HttpStatus.BAD_REQUEST.getCode()).end();
             return;
         }
-        this.lastDepositEarlyEnded = true;
-        this.token = Optional.empty();
+        this.edge.setEarlyEnd(true);
         this.vertx.executeBlocking(promise -> {
             final String fileName = LOGS_PATH
                                     + LocalDate.now()

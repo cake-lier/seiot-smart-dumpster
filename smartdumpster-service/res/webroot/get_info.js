@@ -9,6 +9,7 @@ function changeDumpsterAvailableState(available) {
         success: () => {
             if (available) {
                 displayAvailability();
+                $("#weight > p").text("0");
             } else {
                 displayUnavailability();
             }

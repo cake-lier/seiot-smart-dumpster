@@ -38,14 +38,17 @@ public class ServiceHttpClient {
 
     private final HttpClient client;
     private final Vertx vertx;
+    private final DumpsterEdge edge;
 
     /**
      * 
      * @param vertx the Vertx instance launched.
+     * @param edge a
      */
-    public ServiceHttpClient(final Vertx vertx) {
+    public ServiceHttpClient(final Vertx vertx, final DumpsterEdge edge) {
         this.vertx = vertx;
         this.client = this.vertx.createHttpClient();
+        this.edge = edge;
     }
     /**
      * 
@@ -110,13 +113,20 @@ public class ServiceHttpClient {
      */
     public void setAvailableState(final boolean available, final RoutingContext routingContext) {
         final JsonObject jsonRequestBody = new JsonObject();
+        final HttpServerResponse response = routingContext.response();
         jsonRequestBody.put(AVAILABLE_JSON_KEY, available);
         this.client.put(HOST, STATE_ROUTE)
                    .putHeader(HttpHeaders.CONTENT_TYPE, JSON_MIME_TYPE)
                    .setHandler(edgeResponse -> {
-                       routingContext.response().setStatusCode(edgeResponse.succeeded()
-                                                               ? edgeResponse.result().statusCode()
-                                                               : HttpStatus.INTERNAL_SERVER_ERROR.getCode()).end();
+                       if (edgeResponse.succeeded()) {
+                           final int code = edgeResponse.result().statusCode();
+                           if (code == HttpStatus.OK.getCode()) {
+                               this.edge.setStateAvailable(available);
+                           }
+                           response.setStatusCode(code).end();
+                       } else {
+                           response.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.getCode()).end();
+                       }
                    })
                    .end(jsonRequestBody.encode());
     }
