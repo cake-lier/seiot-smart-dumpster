@@ -65,14 +65,14 @@ public class ServiceHttpClient {
                 }
                 final JsonObject jsonEdgeResponseBody = edgeResponseBody.result().toJsonObject();
                 if (jsonEdgeResponseBody == null
-                    || !JsonParserUtilities.hasJsonCorrectField(jsonEdgeResponseBody,
-                                                       AVAILABLE_JSON_KEY,
-                                                       Boolean.class,
-                                                       Collections.emptySet())
-                    || !JsonParserUtilities.hasJsonCorrectField(jsonEdgeResponseBody,
-                                                                WEIGHT_JSON_KEY,
-                                                                Integer.class,
-                                                                Collections.emptySet())) {
+                    || !JsonParserUtils.hasJsonCorrectField(jsonEdgeResponseBody,
+                                                            AVAILABLE_JSON_KEY,
+                                                            Boolean.class,
+                                                            Collections.emptySet())
+                    || !JsonParserUtils.hasJsonCorrectField(jsonEdgeResponseBody,
+                                                            WEIGHT_JSON_KEY,
+                                                            Integer.class,
+                                                            Collections.emptySet())) {
                     response.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.getCode()).end();
                     return;
                 }
@@ -157,10 +157,10 @@ public class ServiceHttpClient {
                        }
                        result.body(responseBody -> {
                            if (!responseBody.succeeded()
-                               || !JsonParserUtilities.hasJsonCorrectField(responseBody.result().toJsonObject(),
-                                                                  WEIGHT_JSON_KEY,
-                                                                  Integer.class,
-                                                                  Collections.emptySet())) {
+                               || !JsonParserUtils.hasJsonCorrectField(responseBody.result().toJsonObject(),
+                                                                       WEIGHT_JSON_KEY,
+                                                                       Integer.class,
+                                                                       Collections.emptySet())) {
                                response.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.getCode()).end();
                                return;
                            }

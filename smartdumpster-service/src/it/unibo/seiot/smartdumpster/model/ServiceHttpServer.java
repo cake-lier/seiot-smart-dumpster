@@ -94,10 +94,10 @@ public class ServiceHttpServer extends AbstractVerticle {
     private void changeEdgeState(final RoutingContext routingContext) {
         final JsonObject jsonRequestBody = routingContext.getBodyAsJson();
         if (jsonRequestBody == null
-            || !JsonParserUtilities.hasJsonCorrectField(jsonRequestBody,
-                                                        AVAILABLE_JSON_KEY,
-                                                        Boolean.class,
-                                                        Collections.emptySet())) {
+            || !JsonParserUtils.hasJsonCorrectField(jsonRequestBody,
+                                                    AVAILABLE_JSON_KEY,
+                                                    Boolean.class,
+                                                    Collections.emptySet())) {
             routingContext.response().setStatusCode(HttpStatus.BAD_REQUEST.getCode()).end();
             return;
         }
@@ -157,15 +157,15 @@ public class ServiceHttpServer extends AbstractVerticle {
         final HttpServerResponse response = routingContext.response();
         final JsonObject jsonRequest = routingContext.getBodyAsJson();
         if (jsonRequest == null
-            || !JsonParserUtilities.hasJsonCorrectField(jsonRequest, 
-                                                        DEPOSIT_JSON_KEY,
-                                                        String.class,
-                                                        new HashSet<>(Arrays.asList(BEGIN_DEPOSIT_JSON_VALUE,
-                                                                                    END_DEPOSIT_JSON_VALUE)))
-            || !JsonParserUtilities.hasJsonCorrectField(jsonRequest,
-                                                        TOKEN_JSON_KEY,
-                                                        String.class,
-                                                        Collections.emptySet())) {
+            || !JsonParserUtils.hasJsonCorrectField(jsonRequest, 
+                                                    DEPOSIT_JSON_KEY,
+                                                    String.class,
+                                                    new HashSet<>(Arrays.asList(BEGIN_DEPOSIT_JSON_VALUE,
+                                                                                END_DEPOSIT_JSON_VALUE)))
+            || !JsonParserUtils.hasJsonCorrectField(jsonRequest,
+                                                    TOKEN_JSON_KEY,
+                                                    String.class,
+                                                    Collections.emptySet())) {
             response.setStatusCode(HttpStatus.BAD_REQUEST.getCode()).end();
             return;
         }
@@ -191,10 +191,10 @@ public class ServiceHttpServer extends AbstractVerticle {
         final HttpServerResponse response = routingContext.response();
         final JsonObject jsonRequestBody = routingContext.getBodyAsJson();
         if (jsonRequestBody == null
-            || !JsonParserUtilities.hasJsonCorrectField(jsonRequestBody,
-                                                        WEIGHT_JSON_KEY,
-                                                        Integer.class,
-                                                        Collections.emptySet())) {
+            || !JsonParserUtils.hasJsonCorrectField(jsonRequestBody,
+                                                    WEIGHT_JSON_KEY,
+                                                    Integer.class,
+                                                    Collections.emptySet())) {
             response.setStatusCode(HttpStatus.BAD_REQUEST.getCode()).end();
             return;
         }
