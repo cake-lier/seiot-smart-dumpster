@@ -35,6 +35,8 @@ public class MainActivity extends AppCompatActivity {
     private static final String BT_TARGET_NAME = "bl-arduino";
     private static final String REQUESTING_STR = "Richiesta in corso";
     private static final String TAG = "SmartDumpsterApp_Main";
+    private static final String CONNECTED_STR = "connesso";
+    private static final String REQUEST_ERROR_STR = "Errore, chiudi l'app e riprova";
 
     private Optional<BluetoothChannel> btChannel;
     private String token;
@@ -43,6 +45,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        this.token = "";
         /* activate bluetooth */
         btChannel = Optional.empty();
         activateBT();
@@ -125,7 +128,7 @@ public class MainActivity extends AppCompatActivity {
                                        }); // TODO: this "blocks" the app if the service doesn't respond
                             } else if (parsedMessage.equals(ControllerMessage.STOP_DEPOSIT.getMessage())) {
                                 // the deposit ended, a new token can be requested
-                                final ServiceMessageBuilder builder = new ServiceMessageBuilder(ServiceMessageType.START_DEPOSIT);
+                                final ServiceMessageBuilder builder = new ServiceMessageBuilder(ServiceMessageType.STOP_DEPOSIT);
                                 builder.setToken(token)
                                        .setDepositPhase("end")
                                        .build()
@@ -147,9 +150,11 @@ public class MainActivity extends AppCompatActivity {
                     new ConnectionTask.EventListener() {
                         @Override
                         public void onConnectionActive(final BluetoothChannel channel) {
-                            ((Button) findViewById(R.id.askTokenButton)).setEnabled(true);
                             btChannel = Optional.ofNullable(channel); // can't be sure null will not be passed as parameter
-                            btChannel.ifPresent(c -> c.registerListener(listener));
+                            btChannel.ifPresent(c -> {
+                                c.registerListener(listener);
+                                ((TextView) findViewById(R.id.btStatus)).setText(CONNECTED_STR);
+                            });
                         }
                         @Override
                         public void onConnectionCanceled() {
@@ -166,17 +171,20 @@ public class MainActivity extends AppCompatActivity {
 
     private void requestToken(final View v) {
         ((TextView) findViewById(R.id.tokenText)).setText(REQUESTING_STR);
-        new ServiceMessageBuilder(ServiceMessageType.START_DEPOSIT).setToken(token)
-                                                                   .setDepositPhase("begin")
-                                                                   .build()
-                                                                   .send(j -> {
-                                                                        final String s = j.optString("token");
-                                                                        if (Objects.nonNull(s)) {
-                                                                            ((TextView) findViewById(R.id.tokenText)).setText(s);
-                                                                            this.token = s;
-                                                                            this.enableTrashButtons();
-                                                                        }
-                                                                   });
+        new ServiceMessageBuilder(ServiceMessageType.GET_TOKEN).build()
+                                                               .send(j -> {
+                                                                    final String s = j.optString("token");
+                                                                    if (Objects.nonNull(s)) {
+                                                                        ((TextView) findViewById(R.id.tokenText)).setText(s);
+                                                                        this.token = s;
+                                                                        this.enableTrashButtons();
+                                                                        Log.d(TAG, "token: " + this.token);
+                                                                    }
+                                                               });
+        if (this.token.equals("")) {
+            ((TextView) findViewById(R.id.tokenText)).setText(REQUEST_ERROR_STR);
+            Log.d(TAG, REQUEST_ERROR_STR);
+        }
     }
 
     private void askKeepOpen(final View v) {

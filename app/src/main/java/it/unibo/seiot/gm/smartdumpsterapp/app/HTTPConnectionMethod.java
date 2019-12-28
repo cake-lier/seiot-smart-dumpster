@@ -51,7 +51,7 @@ public enum HTTPConnectionMethod {
             Log.e("SmartDumpsterApp_HTTPMethods", "Problemi con il protocollo HTTP");
             return Optional.empty();
         } catch (IOException e) {
-            Log.e("SmartDumpsterApp_HTTPMethods", "Problemi con il risultato della comunicazione HTTP");
+            Log.e("SmartDumpsterApp_HTTPMethods", "Problemi con il risultato della richiesta GET HTTP");
             return Optional.empty();
         }
     }),

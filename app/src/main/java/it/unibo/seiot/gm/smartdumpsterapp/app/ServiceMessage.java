@@ -2,7 +2,6 @@ package it.unibo.seiot.gm.smartdumpsterapp.app;
 
 import org.json.JSONObject;
 
-import java.io.InputStream;
 import java.util.function.Consumer;
 
 public class ServiceMessage {

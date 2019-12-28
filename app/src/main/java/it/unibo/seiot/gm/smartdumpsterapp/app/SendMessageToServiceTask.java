@@ -13,12 +13,14 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Scanner;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -28,7 +30,7 @@ import java.util.stream.Collectors;
 public class SendMessageToServiceTask extends AsyncTask<ServiceMessage, Void, List<JSONObject>> {
 
     private static final String TAG = "SmartDumpsterApp_HTTPConnection";
-    private static final String BASE_URL = "http://www.google.com"; // TODO:
+    private static final String BASE_URL = "http://www.google.com/"; // TODO:
 
     private final Consumer<JSONObject> resultManager;
 
@@ -84,17 +86,7 @@ public class SendMessageToServiceTask extends AsyncTask<ServiceMessage, Void, Li
     }
 
     private String readStream(final InputStream in) {
-        try (final BufferedReader br = new BufferedReader(new InputStreamReader(in))) {
-            final StringBuilder sb = new StringBuilder();
-            String s = br.readLine();
-            while (s != null) {
-                sb.append(s);
-                s = br.readLine();
-            }
-            return sb.toString();
-        } catch (final IOException e) {
-            Log.e(TAG, e.getMessage());
-        }
-        return "";
+        Scanner s = new Scanner(in).useDelimiter("\\A");
+        return s.hasNext() ? s.next() : "";
     }
 }

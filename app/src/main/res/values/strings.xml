@@ -7,4 +7,5 @@
   <string name="requestTokenText">Richiedi token</string>
   <string name="tokenText">token</string>
   <string name="keepOpenText">Prolunga apertura</string>
+  <string name="btStatusText">non connesso</string>
 </resources>
