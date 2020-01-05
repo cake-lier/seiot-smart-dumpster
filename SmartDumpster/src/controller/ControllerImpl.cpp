@@ -12,9 +12,10 @@
 #define BT_TX 2
 #define PERIOD 100 // milliseconds
 
-ControllerImpl::ControllerImpl(void) {
+ControllerImpl::ControllerImpl(SoftwareSerial *btc) {
     this->physicalSystem = new PhysicalSystemImpl();
-    this->commSystem = new CommunicationSystemImpl(BT_TX, BT_RX, new MessageParserImpl());
+    MessageParser *parser = new MessageParserImpl();
+    this->commSystem = new CommunicationSystemImpl(btc, parser);
     this->handlerManager = new HandlerManagerImpl(this->physicalSystem, this->commSystem, &(this->openTime));
     this->eventGenerator = new EventGeneratorImpl();
     this->openTime = 0;
@@ -29,20 +30,19 @@ ControllerImpl::~ControllerImpl(void) {
 }
 
 void ControllerImpl::run(void) {
-    Serial.println("getting msg"); // DEBUG:
-    delay(2000); // DEBUG:
     Message msg = this->commSystem->getMessage();
-    Serial.println("got msg"); // DEBUG:
     const unsigned long int t0 = millis();
     this->openTime = this->openTime + (t0 - this->lastCheckedTime);
     this->lastCheckedTime = t0;
     std::vector<Event> queue = *(this->eventGenerator->generateEventFromMessage(msg));
     std::vector<Event> queue2 = *(this->eventGenerator->generatePeriodicEvent(this->openTime));
     queue.insert(queue.end(), queue2.begin(), queue2.end());
-    Serial.println("got events"); // DEBUG:
+    for (int i = 0; i < queue.size(); i++) {
+        // this->handlerManager->runEventHandler(queue[i]); // DEBUG:
+    }
     // TODO: this lambda breaks everything
-    for_each(queue.begin(), queue.end(), [=, *this](Event ev) -> void {
+    /*for_each(queue.begin(), queue.end(), [=, *this](Event ev) -> void {
         this->handlerManager->runEventHandler(ev);
-    });
+    });*/
     delay(PERIOD);
 }

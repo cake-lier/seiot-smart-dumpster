@@ -6,10 +6,11 @@
 #include "../model/logics/HandlerManager.h"
 #include "../model/logics/EventGenerator.h"
 #include "Controller.h"
+#include <SoftwareSerial.h>
 
 class ControllerImpl : public Controller {
     public:
-        ControllerImpl(void);
+        ControllerImpl(SoftwareSerial *btc);
         ~ControllerImpl(void);
         void run(void) override;
     private:

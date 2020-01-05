@@ -10,17 +10,13 @@ class CommunicationSystemImpl : public CommunicationSystem {
         /*
          * Default constructor.
          */
-        CommunicationSystemImpl(const int txPin, const int rxPin, MessageParser *parser);
+        CommunicationSystemImpl(SoftwareSerial *channel, MessageParser *parser);
         /*
          * Default destructor.
          */
         ~CommunicationSystemImpl(void);
         /*
-         * Returns true if there is a message available.
-         */
-        bool isAvailable(void) override;
-        /*
-         * Returns the first message in the received messages queue.
+         * Returns the received messages queue.
          */
         Message getMessage(void) override;
         /*

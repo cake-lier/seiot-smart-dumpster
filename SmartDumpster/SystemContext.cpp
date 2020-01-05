@@ -8,8 +8,8 @@ SystemContext *SystemContext::getInstance(void) {
     return SINGLETON;
 }
 
-SystemContext::SystemContext(void) {
-    this->controller = new ControllerImpl();
+SystemContext::SystemContext(SoftwareSerial *btc) {
+    this->controller = new ControllerImpl(btc);
 }
 
 SystemContext::~SystemContext(void) {
@@ -20,8 +20,8 @@ void SystemContext::run(void) {
     this->controller->run();
 }
 
-void SystemContext::init(void) {
+void SystemContext::init(SoftwareSerial *btc) {
     if (SINGLETON == nullptr) {
-        SINGLETON = new SystemContext();
+        SINGLETON = new SystemContext(btc);
     }
 }

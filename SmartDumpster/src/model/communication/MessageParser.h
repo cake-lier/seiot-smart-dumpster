@@ -2,6 +2,7 @@
 #define __MESSAGE_PARSER__
 
 #include "Message.h"
+#include <ArduinoSTL.h>
 #include <Arduino.h>
 
 /*

@@ -3,6 +3,7 @@
 #define __SYSTEM_CONTEXT__
 
 #include "src/controller/Controller.h"
+#include <SoftwareSerial.h>
 
 /*
  * The class encompassing the entire system the Arduino should run. It's made of physical components all grouped
@@ -19,7 +20,7 @@ class SystemContext {
         /*
          * Static method to be called before starting to run the system. It initializes it.
          */
-        static void init(void);
+        static void init(SoftwareSerial *btc);
         /*
          * It executes the logic of the system one step at a time. It should be put into an endless loop.
          */
@@ -29,7 +30,7 @@ class SystemContext {
          * Default constructor, the singleton pattern requires it to be private. It will be the job of the init() method
          * to create the only instance of this class.
          */
-        SystemContext(void);
+        SystemContext(SoftwareSerial *btc);
         /*
          * Default destructor. The system should be destroyed when the Arduino is shut down, but because it should
          * endlessly run, there is no need to make it public.
