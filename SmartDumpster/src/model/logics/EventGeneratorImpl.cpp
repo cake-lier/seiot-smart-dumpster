@@ -1,45 +1,61 @@
 #include "EventGeneratorImpl.h"
 
-#define T_DELIVER 60000 // milliseconds
+#include <stdlib.h>
+
+#define T_DELIVER 10000 // DEBUG: 60000 // milliseconds
 
 using namespace std;
 
-vector<Event> *EventGeneratorImpl::generateEventFromMessage(const Message message) {
-    vector<Event> *ev = new vector<Event>();
+unsigned int EventGeneratorImpl::generateEventFromMessage(const Message message, Event **events) {
+    unsigned int eventsNum;
     switch (message) {
-        case Message::SET_TRASH_A: 
-            ev->push_back(Event::SET_TRASH_A);
-            ev->push_back(Event::START_DEPOSIT);
+        case Message::SET_TRASH_A:
+            eventsNum = 2;
+            *events = (Event *) malloc(eventsNum * sizeof(Event));
+            (*events)[0] = Event::SET_TRASH_A;
+            (*events)[1] = Event::START_DEPOSIT;
             break;
-        case Message::SET_TRASH_B:
-            ev->push_back(Event::SET_TRASH_B);
-            ev->push_back(Event::START_DEPOSIT);
+        case Message::SET_TRASH_B:        
+            eventsNum = 2;
+            *events = (Event *) malloc(eventsNum * sizeof(Event));
+            (*events)[0] = (Event::SET_TRASH_B);
+            (*events)[1] = (Event::START_DEPOSIT);
             break;
-        case Message::SET_TRASH_C: 
-            ev->push_back(Event::SET_TRASH_C);
-            ev->push_back(Event::START_DEPOSIT);
+        case Message::SET_TRASH_C:         
+            eventsNum = 2;
+            *events = (Event *) malloc(eventsNum * sizeof(Event));
+            (*events)[0] = (Event::SET_TRASH_C);
+            (*events)[1] = (Event::START_DEPOSIT);
             break;
-        case Message::START_DEPOSIT: 
-            ev->push_back(Event::START_DEPOSIT);
+        case Message::START_DEPOSIT:         
+            eventsNum = 1;
+            *events = (Event *) malloc(eventsNum * sizeof(Event));
+            (*events)[0] = (Event::START_DEPOSIT);
             break;
-        case Message::END_DEPOSIT:
-            ev->push_back(Event::END_DEPOSIT);
+        case Message::END_DEPOSIT:        
+            eventsNum = 1;
+            *events = (Event *) malloc(eventsNum * sizeof(Event));
+            (*events)[0] = (Event::END_DEPOSIT);
             break;
-        case Message::KEEP_OPEN: 
-            ev->push_back(Event::KEEP_OPEN_REQUEST);
+        case Message::KEEP_OPEN:         
+            eventsNum = 1;
+            *events = (Event *) malloc(eventsNum * sizeof(Event));
+            (*events)[0] = (Event::KEEP_OPEN_REQUEST);
             break;
-        default:
-            ev->push_back(Event::EMPTY);
+        default:        
+            eventsNum = 1;
+            *events = (Event *) malloc(eventsNum * sizeof(Event));
+            (*events)[0] = (Event::EMPTY);
     }
-    return ev;
+    return eventsNum;
 }
 
-vector<Event> *EventGeneratorImpl::generatePeriodicEvent(const unsigned int timeSinceOpening) {
-    vector<Event> *evs = new vector<Event>();
+unsigned int EventGeneratorImpl::generatePeriodicEvent(const unsigned int timeSinceOpening, Event **events) {
+    *events = (Event *) malloc(sizeof(Event));
     if (timeSinceOpening >= T_DELIVER) {
-        evs->push_back(Event::END_DEPOSIT);
+        (*events)[0] = (Event::END_DEPOSIT);
     } else {
-        evs->push_back(Event::EMPTY);
+        (*events)[0] = (Event::EMPTY);
     }
-    return evs;
+    return 1;
 }

@@ -10,7 +10,7 @@
 
 #define BT_RX 3
 #define BT_TX 2
-#define PERIOD 100 // milliseconds
+#define PERIOD 250 // milliseconds
 
 ControllerImpl::ControllerImpl(SoftwareSerial *btc) {
     this->physicalSystem = new PhysicalSystemImpl();
@@ -30,19 +30,26 @@ ControllerImpl::~ControllerImpl(void) {
 }
 
 void ControllerImpl::run(void) {
+    Event *events;
+    unsigned int numEvents;
     Message msg = this->commSystem->getMessage();
-    const unsigned long int t0 = millis();
-    this->openTime = this->openTime + (t0 - this->lastCheckedTime);
-    this->lastCheckedTime = t0;
-    std::vector<Event> queue = *(this->eventGenerator->generateEventFromMessage(msg));
-    std::vector<Event> queue2 = *(this->eventGenerator->generatePeriodicEvent(this->openTime));
-    queue.insert(queue.end(), queue2.begin(), queue2.end());
-    for (int i = 0; i < queue.size(); i++) {
-        // this->handlerManager->runEventHandler(queue[i]); // DEBUG:
+    if (this->physicalSystem->isServoOpen()) {
+        const unsigned long int t0 = millis();
+        this->openTime = this->openTime + (t0 - this->lastCheckedTime);
+        this->lastCheckedTime = t0;
     }
-    // TODO: this lambda breaks everything
-    /*for_each(queue.begin(), queue.end(), [=, *this](Event ev) -> void {
-        this->handlerManager->runEventHandler(ev);
-    });*/
+    numEvents = this->eventGenerator->generateEventFromMessage(msg, &events);
+    for (int i = 0; i < numEvents; i++) {
+        if (events[i] == Event::START_DEPOSIT) {
+            this->lastCheckedTime = millis();
+        }
+        this->handlerManager->runEventHandler(events[i]);
+    }
+    free((void *) events);
+    numEvents = this->eventGenerator->generatePeriodicEvent(this->openTime, &events);
+    for (int i = 0; i < numEvents; i++) {
+        this->handlerManager->runEventHandler(events[i]);
+    }
+    free((void *) events);
     delay(PERIOD);
 }

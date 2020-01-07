@@ -47,12 +47,17 @@ class PhysicalSystemImpl : public PhysicalSystem {
          * It moves the servo to 0°.
          */
         void closeServo(void) override;
+        /*
+         * Returns whether the servo is open or not.
+         */
+        bool isServoOpen(void) override;
     private:
         Led *trashLedA;
         Led *trashLedB;
         Led *trashLedC;
         ServoMotor *servo;
         Led *activeLed;
+        bool servoOpen;
 };
 
 #endif

@@ -7,8 +7,8 @@ class EventGeneratorImpl : public EventGenerator {
     public:
         EventGeneratorImpl(void) {}
         ~EventGeneratorImpl(void) {}
-        std::vector<Event> *generateEventFromMessage(const Message message) override;
-        std::vector<Event> *generatePeriodicEvent(const unsigned int timeSinceOpening) override;
+        unsigned int generateEventFromMessage(const Message message, Event **events) override;
+        unsigned int generatePeriodicEvent(const unsigned int timeSinceOpening, Event **events) override;
 };
 
 #endif

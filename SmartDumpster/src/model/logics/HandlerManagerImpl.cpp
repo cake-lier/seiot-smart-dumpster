@@ -18,10 +18,12 @@ void HandlerManagerImpl::runEventHandler(const Event event) {
             this->physicalSystem->turnOnTrashCLed();
             break;
         case Event::START_DEPOSIT: 
+            *(this->openTime) = 0;
             this->physicalSystem->openServo();
             this->commSystem->sendMessage(Message::START_DEPOSIT);
             break;
-        case Event::END_DEPOSIT: 
+        case Event::END_DEPOSIT:
+            *(this->openTime) = 0;
             this->physicalSystem->closeServo();
             this->physicalSystem->turnOffActiveTrashLed();
             this->commSystem->sendMessage(Message::END_DEPOSIT);

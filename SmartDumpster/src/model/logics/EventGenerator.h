@@ -7,8 +7,8 @@
 
 class EventGenerator {
     public:
-        virtual std::vector<Event> *generateEventFromMessage(Message) = 0;
-        virtual std::vector<Event> *generatePeriodicEvent(unsigned int) = 0; // TODO: change name
+        virtual unsigned int generateEventFromMessage(Message, Event **) = 0;
+        virtual unsigned int generatePeriodicEvent(unsigned int, Event **) = 0; // TODO: change name
 };
 
 #endif

@@ -15,7 +15,6 @@ Message CommunicationSystemImpl::getMessage() {
     // only single character messages are considered in this system
     if (this->btChannel->available()) {
         char rc = (char) this->btChannel->read();
-        Serial.println(rc);
         String str = String(rc);
         return this->parser->parseStrToMsg(str);
     } else {

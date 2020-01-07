@@ -20,6 +20,7 @@ PhysicalSystemImpl::PhysicalSystemImpl(void) {
     this->servo = new ServoMotorImpl(SERVO_PIN);
     this->servo->turnOn();
     this->activeLed = NULL;
+    this->servoOpen = false;
 }
 
 PhysicalSystemImpl::~PhysicalSystemImpl(void) {
@@ -53,8 +54,14 @@ void PhysicalSystemImpl::turnOffActiveTrashLed(void) {
 
 void PhysicalSystemImpl::openServo(void) {
     this->servo->moveToDegree(DEGREE_MAX);
+    this->servoOpen = true;
 }
 
 void PhysicalSystemImpl::closeServo(void) {
     this->servo->moveToDegree(DEGREE_MIN);
+    this->servoOpen = false;
+}
+
+bool PhysicalSystemImpl::isServoOpen(void) {
+    return this->servoOpen;
 }
