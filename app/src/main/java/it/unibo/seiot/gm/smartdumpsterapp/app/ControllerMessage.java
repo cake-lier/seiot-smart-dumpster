@@ -19,7 +19,7 @@ public enum ControllerMessage {
     /**
      * A message representing the start of the deposit.
      */
-    START_DEPOSIT("O"),
+    START_DEPOSIT("S"),
     /**
      * A message representing the end of the deposit.
      */

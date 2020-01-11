@@ -15,6 +15,7 @@ import android.widget.TextView;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -69,6 +70,11 @@ public class MainActivity extends AppCompatActivity {
         this.btChannel.ifPresent(BluetoothChannel::close);
     }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+    }
+
     private void activateBT() {
         final BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
         if (btAdapter == null) {
@@ -81,26 +87,26 @@ public class MainActivity extends AppCompatActivity {
 
     private void initUI() {
         /* Connect button */
-        final Button connectBtn = (Button) findViewById(R.id.connectButton);
+        final Button connectBtn = findViewById(R.id.connectButton);
         connectBtn.setOnClickListener(this::blConnect);
         /* Request token button */
-        final Button tokenBtn = (Button) findViewById(R.id.askTokenButton);
+        final Button tokenBtn = findViewById(R.id.askTokenButton);
         tokenBtn.setEnabled(true);
         tokenBtn.setOnClickListener(this::requestToken);
         /* Trash type 1 button */
-        final Button trash1Btn = (Button) findViewById(R.id.trashType1Button);
+        final Button trash1Btn = findViewById(R.id.trashType1Button);
         trash1Btn.setEnabled(false);
         trash1Btn.setOnClickListener(v -> this.sendTrashTypeMessage(ControllerMessage.TRASH_1_SET_MESSAGE));
         /* Trash type 2 button */
-        final Button trash2Btn = (Button) findViewById(R.id.trashType2Button);
+        final Button trash2Btn = findViewById(R.id.trashType2Button);
         trash2Btn.setEnabled(false);
         trash2Btn.setOnClickListener(v -> this.sendTrashTypeMessage(ControllerMessage.TRASH_2_SET_MESSAGE));
         /* Trash type 3 button */
-        final Button trash3Btn = (Button) findViewById(R.id.trashType3Button);
+        final Button trash3Btn = findViewById(R.id.trashType3Button);
         trash3Btn.setEnabled(false);
         trash3Btn.setOnClickListener(v -> this.sendTrashTypeMessage(ControllerMessage.TRASH_3_SET_MESSAGE));
         /* Keep open button */
-        final Button keepOpenButton = (Button) findViewById(R.id.keepOpenButton);
+        final Button keepOpenButton = findViewById(R.id.keepOpenButton);
         keepOpenButton.setEnabled(false);
         keepOpenButton.setOnClickListener(this::askKeepOpen);
     }
@@ -115,26 +121,32 @@ public class MainActivity extends AppCompatActivity {
                         @Override
                         public void onMessageReceived(final String receivedMessage) {
                             // the terminator of the arduino message is a carriage return
-                            final String parsedMessage = receivedMessage.replaceAll("(\\r|\\n)", "");
+                            final String parsedMessage = receivedMessage.chars()
+                                                                        .filter(c -> c != 13 && c != 10)
+                                                                        .mapToObj(c -> Character.toString((char) c))
+                                                                        .collect(Collectors.joining());
                             if (parsedMessage.equals(ControllerMessage.START_DEPOSIT.getMessage())) {
                                 // the deposit started, the trash type can't be changed
+                                Log.d(TAG, "Start deposit");
                                 final ServiceMessageBuilder builder = new ServiceMessageBuilder(ServiceMessageType.START_DEPOSIT);
                                 builder.setToken(token)
                                        .setDepositPhase("begin")
                                        .build()
                                        .send(s -> {
                                            disableTrashButtons();
-                                           ((Button) findViewById(R.id.askTokenButton)).setEnabled(false);
+                                           findViewById(R.id.askTokenButton).setEnabled(false);
+                                           findViewById(R.id.keepOpenButton).setEnabled(true);
                                        }); // TODO: this "blocks" the app if the service doesn't respond
                             } else if (parsedMessage.equals(ControllerMessage.STOP_DEPOSIT.getMessage())) {
                                 // the deposit ended, a new token can be requested
+                                Log.d(TAG, "End deposit");
                                 final ServiceMessageBuilder builder = new ServiceMessageBuilder(ServiceMessageType.STOP_DEPOSIT);
                                 builder.setToken(token)
                                        .setDepositPhase("end")
                                        .build()
                                        .send(s -> {
-                                           ((Button) findViewById(R.id.keepOpenButton)).setEnabled(false);
-                                           ((Button) findViewById(R.id.askTokenButton)).setEnabled(true);
+                                           findViewById(R.id.keepOpenButton).setEnabled(false);
+                                           findViewById(R.id.askTokenButton).setEnabled(true);
                                        }); // TODO: this "blocks" the app if the service doesn't respond
                             } else {
                                 Log.d(TAG, "received ASCII " + receivedMessage.chars().boxed().collect(Collectors.toList()));
@@ -154,6 +166,9 @@ public class MainActivity extends AppCompatActivity {
                             btChannel.ifPresent(c -> {
                                 c.registerListener(listener);
                                 ((TextView) findViewById(R.id.btStatus)).setText(CONNECTED_STR);
+                                if (!token.equals("")) {
+                                    setEnableTrashButtons(true);
+                                }
                             });
                         }
                         @Override
@@ -177,13 +192,15 @@ public class MainActivity extends AppCompatActivity {
                                                                     if (Objects.nonNull(s)) {
                                                                         ((TextView) findViewById(R.id.tokenText)).setText(s);
                                                                         this.token = s;
-                                                                        this.enableTrashButtons();
+                                                                        this.btChannel.ifPresent(c -> this.enableTrashButtons());
                                                                         Log.d(TAG, "token: " + this.token);
                                                                     }
                                                                });
         if (this.token.equals("")) {
             ((TextView) findViewById(R.id.tokenText)).setText(REQUEST_ERROR_STR);
             Log.d(TAG, REQUEST_ERROR_STR);
+            this.btChannel.ifPresent(c -> this.enableTrashButtons()); // DEBUG:
+            this.token = "token"; // DEBUG:
         }
     }
 
@@ -193,7 +210,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void sendTrashTypeMessage(final ControllerMessage type) {
         this.btChannel.ifPresent(c -> c.sendMessage(type.getMessage()));
-        ((Button) findViewById(R.id.keepOpenButton)).setEnabled(true);
     }
 
     private void enableTrashButtons() {
@@ -207,7 +223,7 @@ public class MainActivity extends AppCompatActivity {
     private void setEnableTrashButtons(final boolean set) {
         Stream.of(R.id.trashType1Button, R.id.trashType2Button, R.id.trashType3Button)
               .map(this::findViewById)
-              .map(o -> {return (Button) o;})
+              .map(o -> (Button) o)
               .forEach(b -> b.setEnabled(set));
     }
 }
