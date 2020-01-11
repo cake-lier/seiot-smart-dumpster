@@ -27,23 +27,23 @@ import java.util.stream.Collectors;
 /**
  * An {@link AsyncTask} used for sending messages to the service server.
  */
-public class SendMessageToServiceTask extends AsyncTask<ServiceMessage, Void, List<JSONObject>> {
+public class SendMessageToServiceTask extends AsyncTask<ServiceMessage, Void, List<Optional<JSONObject>>> {
 
     private static final String TAG = "SmartDumpsterApp_HTTPConnection";
-    private static final String BASE_URL = "http://192.168.43.201:8080"; // TODO:
+    private static final String BASE_URL = "http://192.168.43.201:8080/"; // TODO:
 
-    private final Consumer<JSONObject> resultManager;
+    private final Consumer<Optional<JSONObject>> resultManager;
 
     /**
      * Builds a new {@link SendMessageToServiceTask}.
      * @param resultManager a {@link Consumer} used for managing the result of the {@link SendMessageToServiceTask}
      */
-    public SendMessageToServiceTask(final Consumer<JSONObject> resultManager) {
+    public SendMessageToServiceTask(final Consumer<Optional<JSONObject>> resultManager) {
         this.resultManager = resultManager;
     }
 
     @Override
-    protected List<JSONObject> doInBackground(final ServiceMessage... messages) {
+    protected List<Optional<JSONObject>> doInBackground(final ServiceMessage... messages) {
         Log.d(TAG, "Creating HTTPUrlConnection");
         return Arrays.stream(messages)
                      .map(m -> {
@@ -62,6 +62,7 @@ public class SendMessageToServiceTask extends AsyncTask<ServiceMessage, Void, Li
                              if (Objects.nonNull(conn)) {
                                  conn.disconnect();
                              }
+                             Log.d(TAG, "Connection result: " + result.toString());
                              return result;
                          }
                      })
@@ -76,12 +77,12 @@ public class SendMessageToServiceTask extends AsyncTask<ServiceMessage, Void, Li
                              return null;
                          }
                      })
-                     .filter(Objects::nonNull)
+                     .map(Optional::ofNullable)
                      .collect(Collectors.toList());
     }
 
     @Override
-    protected void onPostExecute(final List<JSONObject> result) {
+    protected void onPostExecute(final List<Optional<JSONObject>> result) {
         result.forEach(this.resultManager); // executed on Main Thread
     }
 

@@ -12,6 +12,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import org.json.JSONObject;
+
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -187,19 +189,24 @@ public class MainActivity extends AppCompatActivity {
     private void requestToken(final View v) {
         ((TextView) findViewById(R.id.tokenText)).setText(REQUESTING_STR);
         new ServiceMessageBuilder(ServiceMessageType.GET_TOKEN).build()
-                                                               .send(j -> {
-                                                                    final String s = j.optString("token");
-                                                                    if (Objects.nonNull(s)) {
-                                                                        ((TextView) findViewById(R.id.tokenText)).setText(s);
-                                                                        this.token = s;
-                                                                        this.btChannel.ifPresent(c -> this.enableTrashButtons());
-                                                                        Log.d(TAG, "token: " + this.token);
-                                                                    }
+                                                               .send(oj -> {
+                                                                   if (oj.isPresent()) {
+                                                                       final JSONObject j = oj.get();
+                                                                       final String s = j.optString("token");
+                                                                       if (Objects.nonNull(s)) {
+                                                                           ((TextView) findViewById(R.id.tokenText)).setText(s);
+                                                                           this.token = s;
+                                                                           this.btChannel
+                                                                                   .ifPresent(c -> this.enableTrashButtons());
+                                                                           Log.d(TAG, "token: " + this.token);
+                                                                       } else {
+                                                                           Log.d(TAG, "No token received");
+                                                                       }
+                                                                   } else {
+                                                                       ((TextView) findViewById(R.id.tokenText)).setText(REQUEST_ERROR_STR);
+                                                                       Log.d(TAG, REQUEST_ERROR_STR);
+                                                                   }
                                                                });
-        if (this.token.equals("")) {
-            ((TextView) findViewById(R.id.tokenText)).setText(REQUEST_ERROR_STR);
-            Log.d(TAG, REQUEST_ERROR_STR);
-        }
     }
 
     private void askKeepOpen(final View v) {

@@ -22,6 +22,7 @@ public enum HTTPConnectionMethod {
             if (c.getResponseCode() == HttpURLConnection.HTTP_OK) {
                 return Optional.of(c.getInputStream());
             } else {
+                Log.d("HTTPConnectionMethod", "Request result: " + c.getResponseCode());
                 return Optional.empty();
             }
         } catch (ProtocolException e) {
@@ -45,6 +46,7 @@ public enum HTTPConnectionMethod {
             if (c.getResponseCode() == HttpURLConnection.HTTP_OK) {
                 return Optional.of(c.getInputStream());
             } else {
+                Log.d("HTTPConnectionMethod", "Request result: " + c.getResponseCode());
                 return Optional.empty();
             }
         } catch (ProtocolException e) {
@@ -58,6 +60,7 @@ public enum HTTPConnectionMethod {
     PUT((c, p) -> {
         try {
             c.setRequestMethod("PUT");
+            c.setRequestProperty("Content-Type", "application/json"); // TODO: refactor this
             c.setDoOutput(true);
             if (p.isPresent()) {
                 c.getOutputStream().write(p.get());
@@ -65,6 +68,7 @@ public enum HTTPConnectionMethod {
             if (c.getResponseCode() == HttpURLConnection.HTTP_OK) {
                 return Optional.of(c.getInputStream());
             } else {
+                Log.d("HTTPConnectionMethod", "Request result: " + c.getResponseCode());
                 return Optional.empty();
             }
         } catch (ProtocolException e) {
