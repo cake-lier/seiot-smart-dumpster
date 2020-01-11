@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 public class SendMessageToServiceTask extends AsyncTask<ServiceMessage, Void, List<JSONObject>> {
 
     private static final String TAG = "SmartDumpsterApp_HTTPConnection";
-    private static final String BASE_URL = "http://www.google.com/"; // TODO:
+    private static final String BASE_URL = "http://192.168.43.201:8080"; // TODO:
 
     private final Consumer<JSONObject> resultManager;
 

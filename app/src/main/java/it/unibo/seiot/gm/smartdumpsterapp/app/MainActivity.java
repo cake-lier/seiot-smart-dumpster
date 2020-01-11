@@ -199,8 +199,6 @@ public class MainActivity extends AppCompatActivity {
         if (this.token.equals("")) {
             ((TextView) findViewById(R.id.tokenText)).setText(REQUEST_ERROR_STR);
             Log.d(TAG, REQUEST_ERROR_STR);
-            this.btChannel.ifPresent(c -> this.enableTrashButtons()); // DEBUG:
-            this.token = "token"; // DEBUG:
         }
     }
 
