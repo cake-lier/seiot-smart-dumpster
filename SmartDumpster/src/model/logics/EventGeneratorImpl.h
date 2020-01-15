@@ -1,14 +1,37 @@
+/* Authors: Matteo Castellucci, Giorgia Rondinini */
 #ifndef __EVENT_GENERATOR_IMPL__
 #define __EVENT_GENERATOR_IMPL__
 
 #include "EventGenerator.h"
+#include <map>
 
+/*
+ * A source of events which can generate them from an incoming message from the communication system or periodicly knowing the
+ * time interval between the initial instant and the current instant given in periods of the synchronous finite state machine upon
+ * which this software is built.
+ */
 class EventGeneratorImpl : public EventGenerator {
     public:
-        EventGeneratorImpl(void) {}
-        ~EventGeneratorImpl(void) {}
-        unsigned int generateEventFromMessage(const Message message, Event **events) override;
-        unsigned int generatePeriodicEvent(const unsigned int timeSinceOpening, Event **events) override;
+        /*
+         * Default constructor.
+         */
+        EventGeneratorImpl(void);
+        /*
+         * Default destructor.
+         */
+        ~EventGeneratorImpl(void);
+        /*
+         * It generates a new event from an incoming message from the communication system.
+         */
+        Event generateEventFromMessage(const Message message) const override;
+        /*
+         * It generates a new event but only if the associated period has passed given in periods of the synchronous finite state
+         * machine upon which this software is built.
+         */
+        vector<Event> *generatePeriodicEvent(const unsigned int currentInstant) const override;
+    private:
+        const map<Message, Event> * const messageToEvent;
+        const map<unsigned int, const vector<Event> *> * const intervalToEvent;
 };
 
 #endif

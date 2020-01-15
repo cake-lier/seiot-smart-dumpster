@@ -1,36 +1,57 @@
+/* Authors: Matteo Castellucci, Giorgia Rondinini */
 #include "HandlerManagerImpl.h"
+#include "EventHandlerImpl.h"
 
-HandlerManagerImpl::HandlerManagerImpl(PhysicalSystem *system, CommunicationSystem *commSystem, unsigned int *openTime) {
-    this->physicalSystem = system;
-    this->openTime = openTime;
-    this->commSystem = commSystem;
+HandlerManagerImpl::HandlerManagerImpl(PhysicalSystem &system, const CommunicationSystem &commSystem, unsigned int &openCount)
+    : physicalSystem(system), commSystem(commSystem), openCount(openCount), handlers(new vector<const EventHandler *>()) {
+    auto resetCounter = [&]() -> void {
+        this->openCount = 0;
+    };
+    this->addEventHandler(new EventHandlerImpl<decltype(resetCounter)>(Event::KEEP_OPEN, resetCounter));
+    auto startDeposit = [&, resetCounter]() -> void {
+        resetCounter();
+        this->physicalSystem.openServo();
+        this->commSystem.sendMessage(Message::DEPOSIT_HAS_STARTED);
+    };
+    auto startDepositTrashA = [&, startDeposit]() -> void {
+        this->physicalSystem.turnOnTrashALed();
+        startDeposit();
+    };
+    this->addEventHandler(new EventHandlerImpl<decltype(startDepositTrashA)>(Event::START_DEPOSIT_TRASH_A, startDepositTrashA));
+    auto startDepositTrashB = [&, startDeposit]() -> void {
+        this->physicalSystem.turnOnTrashBLed();
+        startDeposit();
+    };
+    this->addEventHandler(new EventHandlerImpl<decltype(startDepositTrashB)>(Event::START_DEPOSIT_TRASH_B, startDepositTrashB));
+    auto startDepositTrashC = [&, startDeposit]() -> void {
+        this->physicalSystem.turnOnTrashCLed();
+        startDeposit();
+    };
+    this->addEventHandler(new EventHandlerImpl<decltype(startDepositTrashC)>(Event::START_DEPOSIT_TRASH_C, startDepositTrashC));
+    auto endDeposit = [&, resetCounter]() -> void {
+        resetCounter();
+        this->physicalSystem.closeServo();
+        this->physicalSystem.turnOffActiveTrashLed();
+        this->commSystem.sendMessage(Message::END_DEPOSIT);
+    };
+    this->addEventHandler(new EventHandlerImpl<decltype(endDeposit)>(Event::END_DEPOSIT, endDeposit));
 }
 
-void HandlerManagerImpl::runEventHandler(const Event event) {
-    switch(event) {
-        case Event::SET_TRASH_A: 
-            this->physicalSystem->turnOnTrashALed(); 
-            break;
-        case Event::SET_TRASH_B: 
-            this->physicalSystem->turnOnTrashBLed(); 
-            break;
-        case Event::SET_TRASH_C: 
-            this->physicalSystem->turnOnTrashCLed();
-            break;
-        case Event::START_DEPOSIT: 
-            *(this->openTime) = 0;
-            this->physicalSystem->openServo();
-            this->commSystem->sendMessage(Message::START_DEPOSIT);
-            break;
-        case Event::END_DEPOSIT:
-            *(this->openTime) = 0;
-            this->physicalSystem->closeServo();
-            this->physicalSystem->turnOffActiveTrashLed();
-            this->commSystem->sendMessage(Message::END_DEPOSIT);
-            break;
-        case Event::KEEP_OPEN_REQUEST: 
-            *(this->openTime) = 0;
-            break;
-        default: ;
-    }
+HandlerManagerImpl::~HandlerManagerImpl(void) {
+    for_each(this->handlers->begin(), this->handlers->end(), [](const EventHandler * const handler) -> void {
+        delete handler;
+    });
+    delete this->handlers;
+}
+
+void HandlerManagerImpl::runEventHandler(const Event event) const {
+    for_each(this->handlers->begin(), this->handlers->end(), [&](const EventHandler * const handler) -> void {
+        if (handler->isForEvent(event)) {
+            handler->execute();
+        }
+    });
+}
+
+void HandlerManagerImpl::addEventHandler(const EventHandler * const handler) const {
+    this->handlers->push_back(handler);
 }

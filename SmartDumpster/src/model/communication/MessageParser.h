@@ -1,23 +1,26 @@
+/* Authors: Matteo Castellucci, Giorgia Rondinini */
 #ifndef __MESSAGE_PARSER__
 #define __MESSAGE_PARSER__
 
 #include "Message.h"
-#include <ArduinoSTL.h>
-#include <Arduino.h>
 
 /*
- * A parser for the messages received through a serial connection.
+ * A parser class which can encode messages into their char form and can decode them from their char form.
  */
 class MessageParser {
     public:
         /*
-         * Parses the string and returns the corresponding Message.
+         * It parses the passed char and decodes it into the corresponding message.
          */
-        virtual Message parseStrToMsg(String) const = 0;
+        virtual Message decodeCharToMessage(const char charMessage) const = 0;
         /*
-         * Returns the string corresponding to the Message.
+         * It encodes the passed message into the corrisponding char.
          */
-        virtual String parseMsgToStr(Message) const = 0;
+        virtual char encodeMessageToChar(const Message message) const = 0;
+        /*
+         * Default destructor.
+         */
+        virtual ~MessageParser(void) {};
 };
 
 #endif

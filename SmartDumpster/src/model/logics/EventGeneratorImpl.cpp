@@ -1,61 +1,52 @@
+/* Authors: Matteo Castellucci, Giorgia Rondinini */
 #include "EventGeneratorImpl.h"
+#include "../../../GlobalConstants.h"
+#include <algorithm>
+#include <utility>
 
-#include <stdlib.h>
+#define T_DELIVER 30000U / PERIOD // DEBUG: 60000 // milliseconds
 
-#define T_DELIVER 10000 // DEBUG: 60000 // milliseconds
+EventGeneratorImpl::EventGeneratorImpl(void) 
+    : messageToEvent(new map<Message, Event>({
+        {Message::START_DEPOSIT_TRASH_A, Event::START_DEPOSIT_TRASH_A},
+        {Message::START_DEPOSIT_TRASH_B, Event::START_DEPOSIT_TRASH_B},
+        {Message::START_DEPOSIT_TRASH_C, Event::START_DEPOSIT_TRASH_C},
+        {Message::END_DEPOSIT, Event::END_DEPOSIT},
+        {Message::KEEP_OPEN, Event::KEEP_OPEN}
+      })),
+      intervalToEvent(new map<unsigned int, const vector<Event> *>({
+          {T_DELIVER, new const vector<Event>({Event::END_DEPOSIT})}
+      })) {}
 
-using namespace std;
-
-unsigned int EventGeneratorImpl::generateEventFromMessage(const Message message, Event **events) {
-    unsigned int eventsNum;
-    switch (message) {
-        case Message::SET_TRASH_A:
-            eventsNum = 2;
-            *events = (Event *) malloc(eventsNum * sizeof(Event));
-            (*events)[0] = Event::SET_TRASH_A;
-            (*events)[1] = Event::START_DEPOSIT;
-            break;
-        case Message::SET_TRASH_B:        
-            eventsNum = 2;
-            *events = (Event *) malloc(eventsNum * sizeof(Event));
-            (*events)[0] = (Event::SET_TRASH_B);
-            (*events)[1] = (Event::START_DEPOSIT);
-            break;
-        case Message::SET_TRASH_C:         
-            eventsNum = 2;
-            *events = (Event *) malloc(eventsNum * sizeof(Event));
-            (*events)[0] = (Event::SET_TRASH_C);
-            (*events)[1] = (Event::START_DEPOSIT);
-            break;
-        case Message::START_DEPOSIT:         
-            eventsNum = 1;
-            *events = (Event *) malloc(eventsNum * sizeof(Event));
-            (*events)[0] = (Event::START_DEPOSIT);
-            break;
-        case Message::END_DEPOSIT:        
-            eventsNum = 1;
-            *events = (Event *) malloc(eventsNum * sizeof(Event));
-            (*events)[0] = (Event::END_DEPOSIT);
-            break;
-        case Message::KEEP_OPEN:         
-            eventsNum = 1;
-            *events = (Event *) malloc(eventsNum * sizeof(Event));
-            (*events)[0] = (Event::KEEP_OPEN_REQUEST);
-            break;
-        default:        
-            eventsNum = 1;
-            *events = (Event *) malloc(eventsNum * sizeof(Event));
-            (*events)[0] = (Event::EMPTY);
-    }
-    return eventsNum;
+EventGeneratorImpl::~EventGeneratorImpl(void) {
+    delete this->messageToEvent;
+    for_each(this->intervalToEvent->begin(),
+             this->intervalToEvent->end(),
+             [&](const pair<unsigned int, const vector<Event> *> pair) -> void {
+        delete pair.second;
+    });
+    delete this->intervalToEvent;
 }
 
-unsigned int EventGeneratorImpl::generatePeriodicEvent(const unsigned int timeSinceOpening, Event **events) {
-    *events = (Event *) malloc(sizeof(Event));
-    if (timeSinceOpening >= T_DELIVER) {
-        (*events)[0] = (Event::END_DEPOSIT);
-    } else {
-        (*events)[0] = (Event::EMPTY);
+Event EventGeneratorImpl::generateEventFromMessage(const Message message) const {
+    return this->messageToEvent->find(message) != this->messageToEvent->end()
+           ? this->messageToEvent->find(message)->second
+           : Event::EMPTY;
+}
+
+vector<Event> *EventGeneratorImpl::generatePeriodicEvent(const unsigned int currentInstant) const {
+    auto events = new vector<Event>();
+    for_each(this->intervalToEvent->begin(),
+             this->intervalToEvent->end(),
+             [&](const pair<unsigned int, const vector<Event> *> pair) -> void {
+        if (currentInstant >= pair.first) {
+            for_each(pair.second->begin(), pair.second->end(), [&](const Event e) -> void {
+                events->push_back(e);
+            });
+        }
+    });
+    if (events->size() == 0) {
+        events->push_back(Event::EMPTY);
     }
-    return 1;
+    return events;
 }

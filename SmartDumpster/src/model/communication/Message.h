@@ -1,13 +1,38 @@
+/* Authors: Matteo Castellucci, Giorgia Rondinini */
 #ifndef __MESSAGE__
 #define __MESSAGE__
 
+/*
+ * This enum represents the various type of messages that this software can undestand, so it can receive and send.
+ */
 enum class Message {
-    SET_TRASH_A,
-    SET_TRASH_B,
-    SET_TRASH_C,
+    /*
+     * This message indicates the beginning of a deposit of trash of type A.
+     */
+    START_DEPOSIT_TRASH_A,
+    /*
+     * This message indicates the beginning of a deposit of trash of type B.
+     */
+    START_DEPOSIT_TRASH_B,
+    /*
+     * This message indicates the beginning of a deposit of trash of type C.
+     */
+    START_DEPOSIT_TRASH_C,
+    /*
+     * This message indicates that the deposit has successfully started.
+     */
+    DEPOSIT_HAS_STARTED,
+    /*
+     * This message indicates a request for time extension during the deposit of trash.
+     */
     KEEP_OPEN,
-    START_DEPOSIT,
+    /*
+     * This message indicates the ending of a deposit.
+     */
     END_DEPOSIT,
+    /*
+     * This message represents the empty message, which has no meaning.
+     */
     EMPTY
 };
 

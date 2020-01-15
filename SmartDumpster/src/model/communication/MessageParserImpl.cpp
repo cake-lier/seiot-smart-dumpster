@@ -1,40 +1,31 @@
+/* Authors: Matteo Castellucci, Giorgia Rondinini */
 #include "MessageParserImpl.h"
-#include "Message.h"
 
-// TODO: maybe use a bimap
+MessageParserImpl::MessageParserImpl(void)
+    : charToMessage(new map<char, Message>({
+          {'A', Message::START_DEPOSIT_TRASH_A},
+          {'B', Message::START_DEPOSIT_TRASH_B},
+          {'C', Message::START_DEPOSIT_TRASH_C},
+          {'K', Message::KEEP_OPEN}
+      })), 
+      messageToChar(new map<Message, char>({
+          {Message::DEPOSIT_HAS_STARTED, 'S'},
+          {Message::END_DEPOSIT, 'E'}
+      })) {}
 
-Message MessageParserImpl::parseStrToMsg(const String stringMessage) const {
-    if (stringMessage == "A") {
-        return Message::SET_TRASH_A;
-    } else if (stringMessage == "B") {
-        return Message::SET_TRASH_B;
-    } else if (stringMessage == "C") {
-        return Message::SET_TRASH_C;
-    } else if (stringMessage == "K") {
-        return Message::KEEP_OPEN;
-    } else if (stringMessage == "O") {
-        return Message::START_DEPOSIT;
-    } else if (stringMessage == "E") {
-        return Message::END_DEPOSIT;
-    } else {
-        return Message::EMPTY;
-    }
+MessageParserImpl::~MessageParserImpl(void) {
+    delete this->charToMessage;
+    delete this->messageToChar;
 }
 
-String MessageParserImpl::parseMsgToStr(const Message message) const {
-    if (message == Message::SET_TRASH_A) {
-        return "A";
-    } else if (message == Message::SET_TRASH_B) {
-        return "B";
-    } else if (message == Message::SET_TRASH_C) {
-        return "C";
-    } else if (message == Message::KEEP_OPEN) {
-        return "K";
-    } else if (message == Message::START_DEPOSIT) {
-        return "S";
-    } else if (message == Message::END_DEPOSIT) {
-        return "E";
-    } else {
-        return "";
-    }
+Message MessageParserImpl::decodeCharToMessage(const char charMessage) const {
+    return this->charToMessage->find(charMessage) != this->charToMessage->end()
+           ? this->charToMessage->find(charMessage)->second
+           : Message::EMPTY;
+}
+
+char MessageParserImpl::encodeMessageToChar(const Message message) const {
+    return this->messageToChar->find(message) != this->messageToChar->end()
+           ? this->messageToChar->find(message)->second
+           : '\0';
 }

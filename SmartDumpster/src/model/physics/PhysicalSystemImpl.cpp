@@ -19,7 +19,8 @@ PhysicalSystemImpl::PhysicalSystemImpl(void) {
     this->trashLedC = new LedImpl(LED_C);
     this->servo = new ServoMotorImpl(SERVO_PIN);
     this->servo->turnOn();
-    this->activeLed = NULL;
+    this->servo->moveToDegree(DEGREE_MIN);
+    this->activeLed = nullptr;
     this->servoOpen = false;
 }
 
@@ -46,9 +47,9 @@ void PhysicalSystemImpl::turnOnTrashCLed(void) {
 }
 
 void PhysicalSystemImpl::turnOffActiveTrashLed(void) {
-    if (this->activeLed) {
+    if (this->activeLed != nullptr) {
         this->activeLed->switchOff();
-        this->activeLed = NULL;
+        this->activeLed = nullptr;
     }
 }
 

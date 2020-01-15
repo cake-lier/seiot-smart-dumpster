@@ -34,13 +34,13 @@ class PhysicalSystem {
          */
         virtual void closeServo(void) = 0;
         /*
-         * Default destructor.
-         */
-        virtual ~PhysicalSystem(void) {}
-        /*
          * Returns whether the servo is open or not.
          */
         virtual bool isServoOpen(void) = 0;
+        /*
+         * Default destructor.
+         */
+        virtual ~PhysicalSystem(void) {}
 };
 
 #endif
