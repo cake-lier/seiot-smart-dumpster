@@ -21,5 +21,5 @@ Message CommunicationSystemImpl::receiveMessage() const {
 }
 
 void CommunicationSystemImpl::sendMessage(const Message message) const {
-    this->btChannel->print(this->parser->encodeMessageToChar(message));
+    this->btChannel->println(this->parser->encodeMessageToChar(message));
 }
