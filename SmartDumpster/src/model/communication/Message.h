@@ -31,7 +31,7 @@ enum class Message {
      */
     END_DEPOSIT,
     /*
-     *
+     * This message indicates the need of ending a deposit before time.
      */
     PREMATURE_END_DEPOSIT,
     /*

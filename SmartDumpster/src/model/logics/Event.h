@@ -27,7 +27,7 @@ enum class Event {
      */
     KEEP_OPEN,
     /*
-     * 
+     * The event corresponding ti the temrination of a deposit before time.
      */
     PREMATURE_END_DEPOSIT,
     /*

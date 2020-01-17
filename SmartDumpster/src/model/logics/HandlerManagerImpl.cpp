@@ -28,19 +28,17 @@ HandlerManagerImpl::HandlerManagerImpl(PhysicalSystem &system, const Communicati
         startDeposit();
     };
     this->addEventHandler(new EventHandlerImpl<decltype(startDepositTrashC)>(Event::START_DEPOSIT_TRASH_C, startDepositTrashC));
-    auto endDeposit = [&, resetCounter]() -> void {
-        resetCounter();
-        this->physicalSystem.closeServo();
-        this->physicalSystem.turnOffActiveTrashLed();
-        this->commSystem.sendMessage(Message::END_DEPOSIT);
-    };
-    this->addEventHandler(new EventHandlerImpl<decltype(endDeposit)>(Event::END_DEPOSIT, endDeposit));
     auto prematureEnd = [&, resetCounter]() -> void {
         resetCounter();
         this->physicalSystem.closeServo();
         this->physicalSystem.turnOffActiveTrashLed();
     };
     this->addEventHandler(new EventHandlerImpl<decltype(prematureEnd)>(Event::PREMATURE_END_DEPOSIT, prematureEnd));
+    auto endDeposit = [&, prematureEnd]() -> void {
+        prematureEnd();
+        this->commSystem.sendMessage(Message::END_DEPOSIT);
+    };
+    this->addEventHandler(new EventHandlerImpl<decltype(endDeposit)>(Event::END_DEPOSIT, endDeposit));
 }
 
 HandlerManagerImpl::~HandlerManagerImpl(void) {

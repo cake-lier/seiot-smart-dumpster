@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <utility>
 
-#define T_DELIVER 30000U / PERIOD // DEBUG: 60000 // milliseconds
+#define T_DELIVER 60000U / PERIOD // milliseconds
 
 EventGeneratorImpl::EventGeneratorImpl(void) 
     : messageToEvent(new map<Message, Event>({
