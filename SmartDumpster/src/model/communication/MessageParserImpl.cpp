@@ -3,9 +3,9 @@
 
 MessageParserImpl::MessageParserImpl(void)
     : charToMessage(new map<char, Message>({
-          {'A', Message::START_DEPOSIT_TRASH_A},
-          {'B', Message::START_DEPOSIT_TRASH_B},
-          {'C', Message::START_DEPOSIT_TRASH_C},
+          {'X', Message::START_DEPOSIT_TRASH_A},
+          {'Y', Message::START_DEPOSIT_TRASH_B},
+          {'Z', Message::START_DEPOSIT_TRASH_C},
           {'K', Message::KEEP_OPEN},
           {'P', Message::PREMATURE_END_DEPOSIT}
       })), 
