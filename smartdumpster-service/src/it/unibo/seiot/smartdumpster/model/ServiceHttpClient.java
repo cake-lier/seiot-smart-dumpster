@@ -2,6 +2,9 @@ package it.unibo.seiot.smartdumpster.model;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
@@ -35,6 +38,7 @@ public class ServiceHttpClient {
     private static final String DEPOSIT_JSON_KEY = "deposit";
     private static final String BEGIN_DEPOSIT_JSON_VALUE = "begin";
     private static final String END_DEPOSIT_JSON_VALUE = "end";
+    private static final String ERROR_CREATE_LOG_DIR = "Could not create log directory";
 
     private final HttpClient client;
     private final Vertx vertx;
@@ -84,6 +88,19 @@ public class ServiceHttpClient {
                                                                 .put(WEIGHT_JSON_KEY,
                                                                      jsonEdgeResponseBody.getInteger(WEIGHT_JSON_KEY));
                 this.vertx.executeBlocking(promise -> {
+                    final Path logPath = Paths.get(LOGS_PATH);
+                    if (Files.exists(logPath) && !Files.isDirectory(logPath)) {
+                        response.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.getCode()).end();
+                        promise.fail(ERROR_CREATE_LOG_DIR);
+                        return;
+                    }
+                    try {
+                        Files.createDirectories(Paths.get(LOGS_PATH));
+                    } catch (final IOException ex) {
+                        response.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.getCode()).end();
+                        promise.fail(ex);
+                        return;
+                    }
                     final String fileName = LOGS_PATH
                                             + LocalDate.now()
                                                        .format(DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT))
@@ -176,6 +193,19 @@ public class ServiceHttpClient {
                            }
                            final int weight = responseBody.result().toJsonObject().getInteger(WEIGHT_JSON_KEY);
                            this.vertx.executeBlocking(promise -> {
+                               final Path logPath = Paths.get(LOGS_PATH);
+                               if (Files.exists(logPath) && !Files.isDirectory(logPath)) {
+                                   response.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.getCode()).end();
+                                   promise.fail(ERROR_CREATE_LOG_DIR);
+                                   return;
+                               }
+                               try {
+                                   Files.createDirectories(Paths.get(LOGS_PATH));
+                               } catch (final IOException ex) {
+                                   response.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.getCode()).end();
+                                   promise.fail(ex);
+                                   return;
+                               }
                                final String fileName = LOGS_PATH
                                                        + LocalDate.now()
                                                                   .format(DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT))

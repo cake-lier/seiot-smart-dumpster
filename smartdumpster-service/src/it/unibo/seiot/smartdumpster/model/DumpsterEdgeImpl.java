@@ -5,7 +5,7 @@ package it.unibo.seiot.smartdumpster.model;
  */
 public class DumpsterEdgeImpl implements DumpsterEdge {
     private boolean lastDepositEarlyEnded;
-    private boolean hasDepositBegun;
+    private boolean depositBegun;
     private boolean isAvailable;
 
     /**
@@ -13,7 +13,7 @@ public class DumpsterEdgeImpl implements DumpsterEdge {
      */
     public DumpsterEdgeImpl() {
         this.lastDepositEarlyEnded = false;
-        this.hasDepositBegun = false;
+        this.depositBegun = false;
         this.isAvailable = true;
     }
     /**
@@ -35,21 +35,21 @@ public class DumpsterEdgeImpl implements DumpsterEdge {
      */
     @Override
     public boolean hasDepositBegun() {
-        return this.hasDepositBegun;
+        return this.depositBegun;
     }
     /**
      * {@inheritDoc}
      */
     @Override
     public void beginDeposit() {
-        this.hasDepositBegun = true;
+        this.depositBegun = true;
     }
     /**
      * {@inheritDoc}
      */
     @Override
     public void endDeposit() {
-        this.hasDepositBegun = false;
+        this.depositBegun = false;
     }
     /**
      * {@inheritDoc}

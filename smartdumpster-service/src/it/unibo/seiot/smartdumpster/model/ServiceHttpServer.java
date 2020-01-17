@@ -3,6 +3,9 @@ package it.unibo.seiot.smartdumpster.model;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -55,6 +58,7 @@ public class ServiceHttpServer extends AbstractVerticle {
     private static final String TOKEN_JSON_KEY = "token";
     private static final String BEGIN_DEPOSIT_JSON_VALUE = "begin";
     private static final String END_DEPOSIT_JSON_VALUE = "end";
+    private static final String ERROR_CREATE_LOG_DIR = "Could not create log directory";
 
     private final DumpsterEdge edge;
     private Optional<ServiceHttpClient> client;
@@ -112,6 +116,20 @@ public class ServiceHttpServer extends AbstractVerticle {
      */
     private void getEdgeLog(final RoutingContext routingContext) {
         this.vertx.executeBlocking(promise -> {
+            final HttpServerResponse response = routingContext.response();
+            final Path logPath = Paths.get(LOGS_PATH);
+            if (Files.exists(logPath) && !Files.isDirectory(logPath)) {
+                response.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.getCode()).end();
+                promise.fail(ERROR_CREATE_LOG_DIR);
+                return;
+            }
+            try {
+                Files.createDirectories(Paths.get(LOGS_PATH));
+            } catch (final IOException ex) {
+                response.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.getCode()).end();
+                promise.fail(ex);
+                return;
+            }
             final LocalDate date = LocalDate.now();
             final JsonArray log = new JsonArray();
             IntStream.range(0, N_DAYS)
@@ -133,7 +151,7 @@ public class ServiceHttpServer extends AbstractVerticle {
                              promise.fail(ex);
                          }
                      });
-            routingContext.response().putHeader(HttpHeaders.CONTENT_TYPE, JSON_MIME_TYPE).end(log.encode());
+            response.putHeader(HttpHeaders.CONTENT_TYPE, JSON_MIME_TYPE).end(log.encode());
             promise.complete();
         });
     }
@@ -217,6 +235,19 @@ public class ServiceHttpServer extends AbstractVerticle {
         }
         this.edge.setEarlyEnd(true);
         this.vertx.executeBlocking(promise -> {
+            final Path logPath = Paths.get(LOGS_PATH);
+            if (Files.exists(logPath) && !Files.isDirectory(logPath)) {
+                response.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.getCode()).end();
+                promise.fail(ERROR_CREATE_LOG_DIR);
+                return;
+            }
+            try {
+                Files.createDirectories(Paths.get(LOGS_PATH));
+            } catch (final IOException ex) {
+                response.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.getCode()).end();
+                promise.fail(ex);
+                return;
+            }
             final String fileName = LOGS_PATH
                                     + LocalDate.now()
                                                .format(DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT))
