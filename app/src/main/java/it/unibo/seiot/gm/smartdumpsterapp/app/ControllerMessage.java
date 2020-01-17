@@ -21,6 +21,10 @@ public enum ControllerMessage {
      */
     START_DEPOSIT("S"),
     /**
+     * A message representing a premature end of the deposit.
+     */
+    PREMATURE_STOP_DEPOSIT("P"),
+    /**
      * A message representing the end of the deposit.
      */
     STOP_DEPOSIT("E"),

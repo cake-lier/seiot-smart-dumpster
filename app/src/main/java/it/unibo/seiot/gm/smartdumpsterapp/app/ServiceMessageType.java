@@ -10,8 +10,9 @@ import java.util.HashSet;
  */
 public enum ServiceMessageType {
     GET_TOKEN("token", HTTPConnectionMethod.GET, new HashSet<>()),
-    START_DEPOSIT("deposit", HTTPConnectionMethod.PUT, new HashSet<String>(Arrays.asList("deposit", "token"))),
-    STOP_DEPOSIT("deposit", HTTPConnectionMethod.PUT, new HashSet<String>(Arrays.asList("deposit", "token")));
+    START_DEPOSIT("deposit", HTTPConnectionMethod.PUT, new HashSet<>(Arrays.asList("deposit", "token"))),
+    STOP_DEPOSIT("deposit", HTTPConnectionMethod.PUT, new HashSet<>(Arrays.asList("deposit", "token"))),
+    KEEP_DEPOSITING("deposit", HTTPConnectionMethod.PUT, new HashSet<>(Arrays.asList("deposit", "token")));
 
     private static final String TAG = "SmartDumpsterApp_ServiceMessage";
 

@@ -8,16 +8,19 @@ import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.Pair;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collector;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -35,25 +38,36 @@ import it.unibo.seiot.gm.smartdumpsterapp.btlib.exceptions.BluetoothDeviceNotFou
 public class MainActivity extends AppCompatActivity {
 
     private static final int ENABLE_BT_REQ = 1;
+    private static final int CORE_POOL_SIZE = 1;
+    private static final long KEEP_ALIVE_PERIOD = 90L;
     private static final String BT_TARGET_NAME = "bl-arduino";
     private static final String REQUESTING_STR = "Richiesta in corso";
     private static final String TAG = "SmartDumpsterApp_Main";
     private static final String CONNECTED_STR = "connesso";
-    private static final String REQUEST_ERROR_STR = "Errore, chiudi l'app e riprova";
+    private static final String NOT_CONNECTED_STR = "non connesso";
+    private static final String REQUEST_ERROR_STR = "Errore, chiudi l'app e riprova. Potrebbe esssere necessario aspettare " +
+            "alcuni minuti";
+    private static final String COMM_SERVICE_ERROR = "Impossibile comunicare il server, il deposito sará bloccato. Riprova tra " +
+            "cinque minuti";
+    private static final String NO_TOKEN = "";
 
     private Optional<BluetoothChannel> btChannel;
     private String token;
+    private ScheduledThreadPoolExecutor keepAliveExecutor;
+    private int failuresCount;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        this.token = "";
+        this.token = NO_TOKEN;
         /* activate bluetooth */
         btChannel = Optional.empty();
         activateBT();
         /* init UI */
         initUI();
+        /* init keepAliveExecutor */
+        this.initKeepAliveExecutor();
     }
 
     @Override
@@ -69,12 +83,13 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onStop() {
         super.onStop();
-        this.btChannel.ifPresent(BluetoothChannel::close);
+        this.disconnectBt();
     }
 
     @Override
     public void onPause() {
         super.onPause();
+        this.disconnectBt();
     }
 
     private void activateBT() {
@@ -134,22 +149,23 @@ public class MainActivity extends AppCompatActivity {
                                 builder.setToken(token)
                                        .setDepositPhase("begin")
                                        .build()
-                                       .send(s -> {
-                                           disableTrashButtons();
-                                           findViewById(R.id.askTokenButton).setEnabled(false);
-                                           findViewById(R.id.keepOpenButton).setEnabled(true);
-                                       }); // TODO: this "blocks" the app if the service doesn't respond
+                                       .send(p -> startDepositAnswerManager(p));
                             } else if (parsedMessage.equals(ControllerMessage.STOP_DEPOSIT.getMessage())) {
                                 // the deposit ended, a new token can be requested
                                 Log.d(TAG, "End deposit");
+                                // stopping keepalive messages
+                                keepAliveExecutor.shutdownNow();
+                                initKeepAliveExecutor();
+                                // signalling end of deposit
                                 final ServiceMessageBuilder builder = new ServiceMessageBuilder(ServiceMessageType.STOP_DEPOSIT);
                                 builder.setToken(token)
                                        .setDepositPhase("end")
                                        .build()
-                                       .send(s -> {
+                                       .send(p -> {
                                            findViewById(R.id.keepOpenButton).setEnabled(false);
-                                           findViewById(R.id.askTokenButton).setEnabled(true);
-                                       }); // TODO: this "blocks" the app if the service doesn't respond
+                                           disableTrashButtons();
+                                           resetToken();
+                                       });
                             } else {
                                 Log.d(TAG, "received ASCII " + receivedMessage.chars().boxed().collect(Collectors.toList()));
                             }
@@ -168,14 +184,16 @@ public class MainActivity extends AppCompatActivity {
                             btChannel.ifPresent(c -> {
                                 c.registerListener(listener);
                                 ((TextView) findViewById(R.id.btStatus)).setText(CONNECTED_STR);
-                                if (!token.equals("")) {
+                                findViewById(R.id.connectButton).setEnabled(false);
+                                if (!token.equals(NO_TOKEN)) {
                                     setEnableTrashButtons(true);
                                 }
                             });
                         }
                         @Override
                         public void onConnectionCanceled() {
-                            // TODO: what to do when the connection is interrupted
+                            // what to do when the connection is interrupted
+                            Log.d(TAG, "BT connection canceled");
                         }
                     };
             final ConnectToBluetoothServerTask connectTask = new ConnectToBluetoothServerTask(serverDevice, uuid, eventListener);
@@ -187,26 +205,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void requestToken(final View v) {
+        ((TextView) findViewById(R.id.errorText)).setText("");
         ((TextView) findViewById(R.id.tokenText)).setText(REQUESTING_STR);
-        new ServiceMessageBuilder(ServiceMessageType.GET_TOKEN).build()
-                                                               .send(oj -> {
-                                                                   if (oj.isPresent()) {
-                                                                       final JSONObject j = oj.get();
-                                                                       final String s = j.optString("token");
-                                                                       if (Objects.nonNull(s)) {
-                                                                           ((TextView) findViewById(R.id.tokenText)).setText(s);
-                                                                           this.token = s;
-                                                                           this.btChannel
-                                                                                   .ifPresent(c -> this.enableTrashButtons());
-                                                                           Log.d(TAG, "token: " + this.token);
-                                                                       } else {
-                                                                           Log.d(TAG, "No token received");
-                                                                       }
-                                                                   } else {
-                                                                       ((TextView) findViewById(R.id.tokenText)).setText(REQUEST_ERROR_STR);
-                                                                       Log.d(TAG, REQUEST_ERROR_STR);
-                                                                   }
-                                                               });
+        new ServiceMessageBuilder(ServiceMessageType.GET_TOKEN).build().send(this::tokenRequestAnswerManager);
     }
 
     private void askKeepOpen(final View v) {
@@ -230,5 +231,86 @@ public class MainActivity extends AppCompatActivity {
               .map(this::findViewById)
               .map(o -> (Button) o)
               .forEach(b -> b.setEnabled(set));
+    }
+
+    private boolean isOkCode(final int code) {
+        return code >= 200 && code < 300;
+    }
+
+    private void resetToken() {
+        this.token = NO_TOKEN;
+        ((TextView) findViewById(R.id.tokenText)).setText(this.token);
+        findViewById(R.id.askTokenButton).setEnabled(true);
+    }
+
+    private void startDepositAnswerManager(final Optional<Pair<Integer, String>> p) {
+        if (p.isPresent() && isOkCode(p.get().first)) {
+            // deposit start correctly communicated to the service
+            this.disableTrashButtons();
+            findViewById(R.id.keepOpenButton).setEnabled(true);
+            this.failuresCount = 0;
+            keepAliveExecutor.scheduleAtFixedRate(this::keepAliveTask, KEEP_ALIVE_PERIOD, KEEP_ALIVE_PERIOD, TimeUnit.SECONDS);
+        } else {
+            // connection didn't go well, needs to:
+            // - stop deposit, because it can't be tracked
+            // - allow for new token request
+           this.btChannel.ifPresent(c -> c.sendMessage(ControllerMessage.PREMATURE_STOP_DEPOSIT.getMessage()));
+            ((TextView) findViewById(R.id.errorText)).setText(COMM_SERVICE_ERROR);
+            this.disableTrashButtons();
+            this.resetToken();
+            keepAliveExecutor.shutdownNow();
+            initKeepAliveExecutor();
+        }
+    }
+
+    private void tokenRequestAnswerManager(final Optional<Pair<Integer, String>> op) {
+        if (op.isPresent() && isOkCode(op.get().first)) {
+            try {
+                final JSONObject j = new JSONObject(op.get().second);
+                final String s = j.optString("token");
+                if (Objects.nonNull(s)) {
+                    ((TextView) findViewById(R.id.tokenText)).setText(s);
+                    this.token = s;
+                    this.btChannel.ifPresent(c -> this.enableTrashButtons());
+                    findViewById(R.id.askTokenButton).setEnabled(false);
+                    Log.d(TAG, "token: " + this.token);
+                } else {
+                    Log.d(TAG, "No token received");
+                }
+            } catch (JSONException e) {
+                Log.e(TAG, e.getMessage());
+            }
+        } else {
+            ((TextView) findViewById(R.id.errorText)).setText(REQUEST_ERROR_STR);
+            Log.d(TAG, REQUEST_ERROR_STR);
+        }
+    }
+
+    private void keepAliveTask() {
+        final ServiceMessageBuilder builder = new ServiceMessageBuilder(ServiceMessageType.KEEP_DEPOSITING);
+        builder.setToken(this.token)
+               .setDepositPhase("continue")
+               .build()
+               .send(p -> {
+                   if (!(p.isPresent() && isOkCode(p.get().first))) {
+                       this.failuresCount++;
+                   }
+                   if (this.failuresCount > 1) {
+                       this.btChannel.ifPresent(c -> c.sendMessage(ControllerMessage.PREMATURE_STOP_DEPOSIT.getMessage()));
+                       this.keepAliveExecutor.shutdown();
+                   }
+               });
+    }
+
+    private void disconnectBt() {
+        this.btChannel.ifPresent(BluetoothChannel::close);
+        this.btChannel = Optional.empty();
+        ((TextView) findViewById((R.id.btStatus))).setText(NOT_CONNECTED_STR);
+        findViewById(R.id.connectButton).setEnabled(true);
+    }
+
+    private void initKeepAliveExecutor() {
+        keepAliveExecutor = new ScheduledThreadPoolExecutor(CORE_POOL_SIZE);
+        failuresCount = 0;
     }
 }

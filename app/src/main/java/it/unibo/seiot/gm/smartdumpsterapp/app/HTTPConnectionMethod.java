@@ -1,6 +1,7 @@
 package it.unibo.seiot.gm.smartdumpsterapp.app;
 
 import android.util.Log;
+import android.util.Pair;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,17 +21,17 @@ public enum HTTPConnectionMethod {
         try {
             c.setRequestMethod("GET");
             if (c.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                return Optional.of(c.getInputStream());
+                return Pair.create(c.getResponseCode(), Optional.of(c.getInputStream()));
             } else {
                 Log.d("HTTPConnectionMethod", "Request result: " + c.getResponseCode());
-                return Optional.empty();
+                return Pair.create(c.getResponseCode(), Optional.empty());
             }
         } catch (ProtocolException e) {
             Log.e("SmartDumpsterApp_HTTPMethods", "Problemi con il protocollo HTTP");
-            return Optional.empty();
+            return Pair.create(0, Optional.empty());
         } catch (IOException e) {
             Log.e("SmartDumpsterApp_HTTPMethods", "Problemi con il risultato della comunicazione HTTP");
-            return Optional.empty();
+            return Pair.create(0, Optional.empty());
         }
     }),
     /**
@@ -44,17 +45,17 @@ public enum HTTPConnectionMethod {
                 c.getOutputStream().write(p.get());
             }
             if (c.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                return Optional.of(c.getInputStream());
+                return Pair.create(c.getResponseCode(), Optional.of(c.getInputStream()));
             } else {
                 Log.d("HTTPConnectionMethod", "Request result: " + c.getResponseCode());
-                return Optional.empty();
+                return Pair.create(c.getResponseCode(), Optional.empty());
             }
         } catch (ProtocolException e) {
             Log.e("SmartDumpsterApp_HTTPMethods", "Problemi con il protocollo HTTP");
-            return Optional.empty();
+            return Pair.create(0, Optional.empty());
         } catch (IOException e) {
             Log.e("SmartDumpsterApp_HTTPMethods", "Problemi con il risultato della richiesta GET HTTP");
-            return Optional.empty();
+            return Pair.create(0, Optional.empty());
         }
     }),
     PUT((c, p) -> {
@@ -66,23 +67,23 @@ public enum HTTPConnectionMethod {
                 c.getOutputStream().write(p.get());
             }
             if (c.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                return Optional.of(c.getInputStream());
+                return Pair.create(c.getResponseCode(), Optional.of(c.getInputStream()));
             } else {
                 Log.d("HTTPConnectionMethod", "Request result: " + c.getResponseCode());
-                return Optional.empty();
+                return Pair.create(c.getResponseCode(), Optional.empty());
             }
         } catch (ProtocolException e) {
             Log.e("SmartDumpsterApp_HTTPMethods", "Problemi con il protocollo HTTP");
-            return Optional.empty();
+            return Pair.create(0, Optional.empty());
         } catch (IOException e) {
             Log.e("SmartDumpsterApp_HTTPMethods", "Problemi con il risultato della comunicazione HTTP");
-            return Optional.empty();
+            return Pair.create(0, Optional.empty());
         }
     });
 
-    private BiFunction<HttpURLConnection, Optional<byte[]>, Optional<InputStream>> function;
+    private BiFunction<HttpURLConnection, Optional<byte[]>, Pair<Integer, Optional<InputStream>>> function;
 
-    HTTPConnectionMethod(final BiFunction<HttpURLConnection, Optional<byte[]>, Optional<InputStream>> function) {
+    HTTPConnectionMethod(final BiFunction<HttpURLConnection, Optional<byte[]>, Pair<Integer, Optional<InputStream>>> function) {
         this.function = function;
     }
 
@@ -92,7 +93,7 @@ public enum HTTPConnectionMethod {
      * @param payload the optional payload to be sent (only via POST)
      * @return the {@link InputStream} containing the server response if all went well, an empty {@link Optional} otherwise
      */
-    public Optional<InputStream> doRequest(final HttpURLConnection connection, final Optional<byte[]> payload) {
+    public Pair<Integer, Optional<InputStream>> doRequest(final HttpURLConnection connection, final Optional<byte[]> payload) {
         return this.function.apply(connection, payload);
     }
 }

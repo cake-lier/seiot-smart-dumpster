@@ -1,5 +1,7 @@
 package it.unibo.seiot.gm.smartdumpsterapp.app;
 
+import android.util.Log;
+
 import org.json.JSONObject;
 
 import java.util.HashMap;

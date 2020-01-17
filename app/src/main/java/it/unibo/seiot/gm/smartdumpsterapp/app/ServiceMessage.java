@@ -1,5 +1,8 @@
 package it.unibo.seiot.gm.smartdumpsterapp.app;
 
+import android.util.Log;
+import android.util.Pair;
+
 import org.json.JSONObject;
 
 import java.util.Optional;
@@ -15,7 +18,7 @@ public class ServiceMessage {
         this.message = message;
     }
 
-    public void send(final Consumer<Optional<JSONObject>> resultManager) {
+    public void send(final Consumer<Optional<Pair<Integer, String>>> resultManager) {
         new SendMessageToServiceTask(resultManager).execute(this);
     }
 

@@ -2,21 +2,14 @@ package it.unibo.seiot.gm.smartdumpsterapp.app;
 
 import android.os.AsyncTask;
 import android.util.Log;
+import android.util.Pair;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -27,35 +20,35 @@ import java.util.stream.Collectors;
 /**
  * An {@link AsyncTask} used for sending messages to the service server.
  */
-public class SendMessageToServiceTask extends AsyncTask<ServiceMessage, Void, List<Optional<JSONObject>>> {
+public class SendMessageToServiceTask extends AsyncTask<ServiceMessage, Void, List<Optional<Pair<Integer, String>>>> {
 
     private static final String TAG = "SmartDumpsterApp_HTTPConnection";
     private static final String BASE_URL = "http://192.168.43.201:8080/"; // TODO:
 
-    private final Consumer<Optional<JSONObject>> resultManager;
+    private final Consumer<Optional<Pair<Integer, String>>> resultManager;
 
     /**
      * Builds a new {@link SendMessageToServiceTask}.
      * @param resultManager a {@link Consumer} used for managing the result of the {@link SendMessageToServiceTask}
      */
-    public SendMessageToServiceTask(final Consumer<Optional<JSONObject>> resultManager) {
+    public SendMessageToServiceTask(final Consumer<Optional<Pair<Integer, String>>> resultManager) {
         this.resultManager = resultManager;
     }
 
     @Override
-    protected List<Optional<JSONObject>> doInBackground(final ServiceMessage... messages) {
+    protected List<Optional<Pair<Integer, String>>> doInBackground(final ServiceMessage... messages) {
         Log.d(TAG, "Creating HTTPUrlConnection");
         return Arrays.stream(messages)
                      .map(m -> {
                          HttpURLConnection conn = null;
-                         Optional<InputStream> result = Optional.empty();
+                         Optional<Pair<Integer, Optional<InputStream>>> result = Optional.empty();
                          try {
                              conn = (HttpURLConnection) new URL(BASE_URL + m.getMessageType().getPath()).openConnection();
-                             result =  m.getMessageType()
-                                        .getMethod()
-                                        .doRequest(conn, m.getMessage().length() > 0
-                                                            ? Optional.of(m.getMessage().toString().getBytes(Charset.forName("UTF-8")))
-                                                            : Optional.empty());
+                             result =  Optional.of(m.getMessageType()
+                                                    .getMethod()
+                                                    .doRequest(conn, m.getMessage().length() > 0
+                                                                        ? Optional.of(m.getMessage().toString().getBytes(Charset.forName("UTF-8")))
+                                                                        : Optional.empty()));
                          } catch (final IOException e) {
                              Log.e(TAG, e.getMessage());
                          } finally {
@@ -63,17 +56,18 @@ public class SendMessageToServiceTask extends AsyncTask<ServiceMessage, Void, Li
                                  conn.disconnect();
                              }
                              Log.d(TAG, "Connection result: " + result.toString());
-                             return result;
                          }
+                         return result;
                      })
                      .filter(Optional::isPresent)
                      .map(Optional::get)
-                     .map(this::readStream)
-                     .map(s -> {
-                         try {
-                             return new JSONObject(s);
-                         } catch (final JSONException e) {
-                             Log.e(TAG, e.getMessage());
+                     .map(p -> {
+                         if (p.first != 0 && p.second.isPresent()) {
+                             return Pair.create(p.first, this.readStream(p.second.get()));
+                         } else if (p.first >= 200 && p.first < 300) {
+                             return Pair.create(p.first, "");
+                         } else {
+                             Log.d(TAG, "Returned: " + p.first);
                              return null;
                          }
                      })
@@ -82,7 +76,8 @@ public class SendMessageToServiceTask extends AsyncTask<ServiceMessage, Void, Li
     }
 
     @Override
-    protected void onPostExecute(final List<Optional<JSONObject>> result) {
+    protected void onPostExecute(final List<Optional<Pair<Integer, String>>> result) {
+        Log.d(TAG, "onPostExecute");
         result.forEach(this.resultManager); // executed on Main Thread
     }
 
