@@ -3,6 +3,8 @@
 #define __EVENT_HANDLER_MANAGER_IMPL__
 
 #include "EventHandlerManager.h"
+#include "../physics/PhysicalSystem.h"
+#include "../service/Service.h"
 #include <LinkedList.h>
 
 /*
@@ -13,7 +15,11 @@ class EventHandlerManagerImpl: public EventHandlerManager {
         /*
          * Default constructor.
          */
-        EventHandlerManagerImpl(void);
+        EventHandlerManagerImpl(PhysicalSystem &physics,
+                                const Service &service,
+                                bool &isAvailable,
+                                int &currentWeight, 
+                                bool &isWeightPolling);
         /*
          * Default destructor.
          */
@@ -41,6 +47,11 @@ class EventHandlerManagerImpl: public EventHandlerManager {
     private:
         LinkedList<const EventHandler *> * const handlers;
         LinkedList<const Event *> * const eventQueue;
+        PhysicalSystem &physics;
+        const Service &service;
+        bool &isAvailable;
+        int &currentWeight;
+        bool &isWeightPolling;
 };
 
 #endif

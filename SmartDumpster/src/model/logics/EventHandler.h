@@ -2,7 +2,7 @@
 #ifndef __EVENT_HANDLER__
 #define __EVENT_HANDLER__
 
-#include "../Event.h"
+#include "Event.h"
 
 /*
  * 

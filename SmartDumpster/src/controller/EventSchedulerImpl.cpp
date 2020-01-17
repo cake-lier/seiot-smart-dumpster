@@ -1,35 +1,24 @@
 /* Authors: Matteo Castellucci, Giorgia Rondinini */
 #include "EventSchedulerImpl.h"
-#include "EventHandlerManagerImpl.h"
+#include "../model/logics/EventHandlerManagerImpl.h"
 #include "../model/physics/PhysicalSystemImpl.h"
 #include "../model/service/ServiceImpl.h"
-#include "../model/logics/ForceAvailableEventHandler.h"
-#include "../model/logics/ForceUnavailableEventHandler.h"
-#include "../model/logics/GetStateEventHandler.h"
-#include "../model/logics/StartDepositEventHandler.h"
-#include "../model/logics/EndDepositEventHandler.h"
-#include "EventImpl.h"
-#include "EventType.h"
+#include "../model/logics/EventImpl.h"
+#include "../model/logics/EventType.h"
 #include "../model/physics/PhysicsConstants.h"
 
 EventSchedulerImpl::EventSchedulerImpl(void) 
-    : manager(new EventHandlerManagerImpl()), physics(new PhysicalSystemImpl()), service(new ServiceImpl()) {
-    this->isAvailable = true;
-    this->isWeightPolling = false;
-    this->currentWeight = 0;
+    : physics(new PhysicalSystemImpl()),
+      service(new ServiceImpl()),
+      isAvailable(true),
+      isWeightPolling(false),
+      currentWeight(0),
+      manager(new EventHandlerManagerImpl(*this->physics,
+                                          *this->service,
+                                          this->isAvailable,
+                                          this->currentWeight,
+                                          this->isWeightPolling)) {
     this->physics->turnOnAvailableLed();
-    this->manager->addEventHandler(new ForceAvailableEventHandler(*this->physics,
-                                                                  *this->service,
-                                                                  this->isAvailable,
-                                                                  this->currentWeight));
-    this->manager->addEventHandler(new ForceUnavailableEventHandler(*this->physics, *this->service, this->isAvailable));
-    this->manager->addEventHandler(new GetStateEventHandler(*this->service, this->isAvailable, this->currentWeight));
-    this->manager->addEventHandler(new StartDepositEventHandler(*this->service, this->isAvailable, this->isWeightPolling));
-    this->manager->addEventHandler(new EndDepositEventHandler(*this->physics,
-                                                              *this->service,
-                                                              this->isAvailable,
-                                                              this->isWeightPolling,
-                                                              this->currentWeight));
 }
 
 EventSchedulerImpl::~EventSchedulerImpl(void) {

@@ -3,7 +3,7 @@
 #define __EVENT_SCHEDULER_IMPL__
 
 #include "EventScheduler.h"
-#include "EventHandlerManager.h"
+#include "../model/logics/EventHandlerManager.h"
 #include "../model/physics/PhysicalSystem.h"
 #include "../model/service/Service.h"
 
@@ -25,12 +25,12 @@ class EventSchedulerImpl: public EventScheduler {
          */
         void step(void) override;
     private:
-        EventHandlerManager * const manager;
         PhysicalSystem * const physics;
         Service * const service;
         bool isAvailable;
         bool isWeightPolling;
         int currentWeight;
+        EventHandlerManager * const manager;
 };
 
 #endif
