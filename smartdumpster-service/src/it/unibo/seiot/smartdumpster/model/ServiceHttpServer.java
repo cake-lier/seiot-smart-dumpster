@@ -254,6 +254,7 @@ public class ServiceHttpServer extends AbstractVerticle {
                 }
                 this.vertx.cancelTimer(this.depositTimerID);
                 this.createDepositTimer();
+                response.setStatusCode(HttpStatus.OK.getCode()).end();
             }
         }
     }
