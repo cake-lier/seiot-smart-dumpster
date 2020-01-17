@@ -35,6 +35,12 @@ HandlerManagerImpl::HandlerManagerImpl(PhysicalSystem &system, const Communicati
         this->commSystem.sendMessage(Message::END_DEPOSIT);
     };
     this->addEventHandler(new EventHandlerImpl<decltype(endDeposit)>(Event::END_DEPOSIT, endDeposit));
+    auto prematureEnd = [&, resetCounter]() -> void {
+        resetCounter();
+        this->physicalSystem.closeServo();
+        this->physicalSystem.turnOffActiveTrashLed();
+    };
+    this->addEventHandler(new EventHandlerImpl<decltype(prematureEnd)>(Event::PREMATURE_END_DEPOSIT, prematureEnd));
 }
 
 HandlerManagerImpl::~HandlerManagerImpl(void) {

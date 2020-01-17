@@ -31,6 +31,10 @@ enum class Message {
      */
     END_DEPOSIT,
     /*
+     *
+     */
+    PREMATURE_END_DEPOSIT,
+    /*
      * This message represents the empty message, which has no meaning.
      */
     EMPTY

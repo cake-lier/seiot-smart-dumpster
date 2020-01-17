@@ -27,6 +27,10 @@ enum class Event {
      */
     KEEP_OPEN,
     /*
+     * 
+     */
+    PREMATURE_END_DEPOSIT,
+    /*
      * The empty event, which as part of its definition has no meaning and triggers no handlers.
      */
     EMPTY

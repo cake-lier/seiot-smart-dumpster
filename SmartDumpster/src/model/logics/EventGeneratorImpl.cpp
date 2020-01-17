@@ -12,7 +12,8 @@ EventGeneratorImpl::EventGeneratorImpl(void)
         {Message::START_DEPOSIT_TRASH_B, Event::START_DEPOSIT_TRASH_B},
         {Message::START_DEPOSIT_TRASH_C, Event::START_DEPOSIT_TRASH_C},
         {Message::END_DEPOSIT, Event::END_DEPOSIT},
-        {Message::KEEP_OPEN, Event::KEEP_OPEN}
+        {Message::KEEP_OPEN, Event::KEEP_OPEN},
+        {Message::PREMATURE_END_DEPOSIT, Event::PREMATURE_END_DEPOSIT}
       })),
       intervalToEvent(new map<unsigned int, const vector<Event> *>({
           {T_DELIVER, new const vector<Event>({Event::END_DEPOSIT})}

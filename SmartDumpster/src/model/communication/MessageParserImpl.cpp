@@ -6,7 +6,8 @@ MessageParserImpl::MessageParserImpl(void)
           {'A', Message::START_DEPOSIT_TRASH_A},
           {'B', Message::START_DEPOSIT_TRASH_B},
           {'C', Message::START_DEPOSIT_TRASH_C},
-          {'K', Message::KEEP_OPEN}
+          {'K', Message::KEEP_OPEN},
+          {'P', Message::PREMATURE_END_DEPOSIT}
       })), 
       messageToChar(new map<Message, char>({
           {Message::DEPOSIT_HAS_STARTED, 'S'},
