@@ -233,4 +233,63 @@ public class ServiceHttpClient {
                    })
                    .end(jsonRequestBody.encode());
     }
+    /**
+     * 
+     */
+    public void endDeposit() {
+        final JsonObject jsonRequestBody = new JsonObject();
+        jsonRequestBody.put(DEPOSIT_JSON_KEY, END_DEPOSIT_JSON_VALUE);
+        this.client.put(HOST, DEPOSIT_ROUTE)
+                   .putHeader(HttpHeaders.CONTENT_TYPE, JSON_MIME_TYPE)
+                   .setHandler(edgeResponse -> {
+                       final HttpClientResponse result = edgeResponse.result();
+                       if (!edgeResponse.succeeded() || result.statusCode() != HttpStatus.OK.getCode()) {
+                           return;
+                       }
+                       result.body(responseBody -> {
+                           if (!responseBody.succeeded()
+                               || !JsonParserUtils.hasJsonCorrectField(responseBody.result().toJsonObject(),
+                                                                       WEIGHT_JSON_KEY,
+                                                                       Integer.class,
+                                                                       Collections.emptySet())) {
+                               return;
+                           }
+                           final int weight = responseBody.result().toJsonObject().getInteger(WEIGHT_JSON_KEY);
+                           this.vertx.executeBlocking(promise -> {
+                               final Path logPath = Paths.get(LOGS_PATH);
+                               if (Files.exists(logPath) && !Files.isDirectory(logPath)) {
+                                   promise.fail(ERROR_CREATE_LOG_DIR);
+                                   return;
+                               }
+                               try {
+                                   Files.createDirectories(Paths.get(LOGS_PATH));
+                               } catch (final IOException ex) {
+                                   promise.fail(ex);
+                                   return;
+                               }
+                               final String fileName = LOGS_PATH
+                                                       + LocalDate.now()
+                                                                  .format(DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT))
+                                                                  .replace("/", "")
+                                                       + LOG_EXTENSION;
+                               try (RandomAccessFile file = new RandomAccessFile(fileName, "rw")) {
+                                   if (file.length() == 0) {
+                                       file.writeInt(1);
+                                       file.writeInt(weight);
+                                   } else {
+                                       final int count = file.readInt();
+                                       final int currentWeight = file.readInt();
+                                       file.seek(0);
+                                       file.writeInt(count + 1);
+                                       file.writeInt(currentWeight + weight);
+                                   }
+                                   promise.complete();
+                               } catch (final IOException ex) {
+                                   promise.fail(ex);
+                               }
+                           });
+                       });
+                   })
+                   .end(jsonRequestBody.encode());
+    }
 }
