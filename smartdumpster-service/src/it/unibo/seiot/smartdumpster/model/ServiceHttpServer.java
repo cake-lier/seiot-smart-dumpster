@@ -190,8 +190,8 @@ public class ServiceHttpServer extends AbstractVerticle {
             synchronized (this) {
                 if (this.depositTimerID == id && this.edge.hasDepositBegun()) {
                     this.token = Optional.empty();
+                    this.edge.endDeposit();
                     if (!this.edge.hasLastDepositEarlyEnded()) {
-                        this.edge.endDeposit();
                         this.client.orElseThrow(IllegalStateException::new).endDeposit();
                     }
                 }
@@ -240,9 +240,9 @@ public class ServiceHttpServer extends AbstractVerticle {
                     return;
                 }
                 this.token = Optional.empty();
+                this.edge.endDeposit();
                 this.vertx.cancelTimer(this.depositTimerID);
                 if (!this.edge.hasLastDepositEarlyEnded()) {
-                    this.edge.endDeposit();
                     this.client.orElseThrow(IllegalStateException::new).endDeposit(routingContext);
                 } else {
                     response.setStatusCode(HttpStatus.OK.getCode()).end();

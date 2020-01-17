@@ -65,7 +65,6 @@ public class DumpsterEdgeImpl implements DumpsterEdge {
     public void setEarlyEnd(final boolean earlyEnded) {
         this.lastDepositEarlyEnded = earlyEnded;
         if (earlyEnded) {
-            this.endDeposit();
             this.isAvailable = false;
         }
     }
