@@ -24,6 +24,7 @@ public class SendMessageToServiceTask extends AsyncTask<ServiceMessage, Void, Li
 
     private static final String TAG = "SmartDumpsterApp_HTTPConnection";
     private static final String BASE_URL = "http://192.168.43.201:8080/"; // TODO:
+    private static final int TIMEOUT = 5000;
 
     private final Consumer<Optional<Pair<Integer, String>>> resultManager;
 
@@ -44,10 +45,16 @@ public class SendMessageToServiceTask extends AsyncTask<ServiceMessage, Void, Li
                          Optional<Pair<Integer, Optional<InputStream>>> result = Optional.empty();
                          try {
                              conn = (HttpURLConnection) new URL(BASE_URL + m.getMessageType().getPath()).openConnection();
+                             conn.setConnectTimeout(TIMEOUT);
+                             if (m.getMessage().length() > 0) {
+                                 conn.setRequestProperty("Content-Type", "application/json");
+                             }
                              result =  Optional.of(m.getMessageType()
                                                     .getMethod()
                                                     .doRequest(conn, m.getMessage().length() > 0
-                                                                        ? Optional.of(m.getMessage().toString().getBytes(Charset.forName("UTF-8")))
+                                                                        ? Optional.of(m.getMessage()
+                                                                                       .toString()
+                                                                                       .getBytes(Charset.forName("UTF-8")))
                                                                         : Optional.empty()));
                          } catch (final IOException e) {
                              Log.e(TAG, e.getMessage());
@@ -67,7 +74,7 @@ public class SendMessageToServiceTask extends AsyncTask<ServiceMessage, Void, Li
                          } else if (p.first >= 200 && p.first < 300) {
                              return Pair.create(p.first, "");
                          } else {
-                             Log.d(TAG, "Returned: " + p.first);
+                             Log.d(TAG, "Error code: " + p.first);
                              return null;
                          }
                      })
@@ -77,7 +84,6 @@ public class SendMessageToServiceTask extends AsyncTask<ServiceMessage, Void, Li
 
     @Override
     protected void onPostExecute(final List<Optional<Pair<Integer, String>>> result) {
-        Log.d(TAG, "onPostExecute");
         result.forEach(this.resultManager); // executed on Main Thread
     }
 

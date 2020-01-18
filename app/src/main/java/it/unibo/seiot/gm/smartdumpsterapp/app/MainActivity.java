@@ -63,9 +63,9 @@ public class MainActivity extends AppCompatActivity {
         this.token = NO_TOKEN;
         /* activate bluetooth */
         btChannel = Optional.empty();
-        activateBT();
+        this.activateBT();
         /* init UI */
-        initUI();
+        this.initUI();
         /* init keepAliveExecutor */
         this.initKeepAliveExecutor();
     }
@@ -129,7 +129,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void blConnect(final View v) {
-        activateBT();
+        this.activateBT(); // should already be active, but just to be sure
         try {
             final BluetoothDevice serverDevice = BluetoothUtils.getPairedDeviceByName(BT_TARGET_NAME);
             final UUID uuid = BluetoothUtils.getEmbeddedDeviceDefaultUuid();
@@ -137,7 +137,7 @@ public class MainActivity extends AppCompatActivity {
                     = new RealBluetoothChannel.Listener() {
                         @Override
                         public void onMessageReceived(final String receivedMessage) {
-                            // the terminator of the arduino message is a carriage return
+                            // the terminator of the arduino message is usually a carriage return
                             final String parsedMessage = receivedMessage.chars()
                                                                         .filter(c -> c != 13 && c != 10)
                                                                         .mapToObj(c -> Character.toString((char) c))
@@ -151,10 +151,10 @@ public class MainActivity extends AppCompatActivity {
                                        .build()
                                        .send(p -> startDepositAnswerManager(p));
                             } else if (parsedMessage.equals(ControllerMessage.STOP_DEPOSIT.getMessage())) {
-                                // the deposit ended, a new token can be requested
                                 Log.d(TAG, "End deposit");
-                                // stopping keepalive messages
+                                // stopping keep alive messages
                                 keepAliveExecutor.shutdownNow();
+                                // resetting ScheduledThreadPoolExecutor for future necessities
                                 initKeepAliveExecutor();
                                 // signalling end of deposit
                                 final ServiceMessageBuilder builder = new ServiceMessageBuilder(ServiceMessageType.STOP_DEPOSIT);
@@ -164,6 +164,7 @@ public class MainActivity extends AppCompatActivity {
                                        .send(p -> {
                                            findViewById(R.id.keepOpenButton).setEnabled(false);
                                            disableTrashButtons();
+                                           // the deposit ended, a new token can be requested
                                            resetToken();
                                        });
                             } else {
@@ -172,7 +173,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                         @Override
                         public void onMessageSent(final String sentMessage) {
-                            // TODO: what to do when a message is sent
+                            // no action needed when a message is sent
                             Log.d(TAG, sentMessage);
                         }
                     };
@@ -192,7 +193,6 @@ public class MainActivity extends AppCompatActivity {
                         }
                         @Override
                         public void onConnectionCanceled() {
-                            // what to do when the connection is interrupted
                             Log.d(TAG, "BT connection canceled");
                         }
                     };
@@ -254,7 +254,7 @@ public class MainActivity extends AppCompatActivity {
             // connection didn't go well, needs to:
             // - stop deposit, because it can't be tracked
             // - allow for new token request
-           this.btChannel.ifPresent(c -> c.sendMessage(ControllerMessage.PREMATURE_STOP_DEPOSIT.getMessage()));
+            this.btChannel.ifPresent(c -> c.sendMessage(ControllerMessage.PREMATURE_STOP_DEPOSIT.getMessage()));
             ((TextView) findViewById(R.id.errorText)).setText(COMM_SERVICE_ERROR);
             this.disableTrashButtons();
             this.resetToken();
@@ -275,12 +275,14 @@ public class MainActivity extends AppCompatActivity {
                     findViewById(R.id.askTokenButton).setEnabled(false);
                     Log.d(TAG, "token: " + this.token);
                 } else {
+                    ((TextView) findViewById(R.id.tokenText)).setText(NO_TOKEN);
                     Log.d(TAG, "No token received");
                 }
             } catch (JSONException e) {
                 Log.e(TAG, e.getMessage());
             }
         } else {
+            ((TextView) findViewById(R.id.tokenText)).setText(NO_TOKEN);
             ((TextView) findViewById(R.id.errorText)).setText(REQUEST_ERROR_STR);
             Log.d(TAG, REQUEST_ERROR_STR);
         }
@@ -310,7 +312,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initKeepAliveExecutor() {
-        keepAliveExecutor = new ScheduledThreadPoolExecutor(CORE_POOL_SIZE);
-        failuresCount = 0;
+        this.keepAliveExecutor = new ScheduledThreadPoolExecutor(CORE_POOL_SIZE);
+        this.failuresCount = 0;
     }
 }

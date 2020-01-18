@@ -61,7 +61,6 @@ public enum HTTPConnectionMethod {
     PUT((c, p) -> {
         try {
             c.setRequestMethod("PUT");
-            c.setRequestProperty("Content-Type", "application/json"); // TODO: refactor this
             c.setDoOutput(true);
             if (p.isPresent()) {
                 c.getOutputStream().write(p.get());
