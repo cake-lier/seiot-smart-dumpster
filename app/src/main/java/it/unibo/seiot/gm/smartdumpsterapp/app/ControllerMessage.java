@@ -7,15 +7,15 @@ public enum ControllerMessage {
     /**
      * A message representing the first type of trash.
      */
-    TRASH_1_SET_MESSAGE("A"),
+    TRASH_1_SET_MESSAGE("X"),
     /**
      * A message representing the second type of trash.
      */
-    TRASH_2_SET_MESSAGE("B"),
+    TRASH_2_SET_MESSAGE("Y"),
     /**
      * A message representing the third type of trash.
      */
-    TRASH_3_SET_MESSAGE("C"),
+    TRASH_3_SET_MESSAGE("Z"),
     /**
      * A message representing the start of the deposit.
      */
