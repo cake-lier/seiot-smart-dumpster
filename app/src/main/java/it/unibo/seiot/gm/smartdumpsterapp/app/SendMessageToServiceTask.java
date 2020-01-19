@@ -24,7 +24,7 @@ public class SendMessageToServiceTask extends AsyncTask<ServiceMessage, Void, Li
 
     private static final String TAG = "SmartDumpsterApp_HTTPConnection";
     private static final String BASE_URL = "http://192.168.43.201:8080/"; // TODO:
-    private static final int TIMEOUT = 5000;
+    private static final int TIMEOUT = 100000; // milliseconds
 
     private final Consumer<Optional<Pair<Integer, String>>> resultManager;
 

@@ -50,6 +50,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String COMM_SERVICE_ERROR = "Impossibile comunicare il server, il deposito sará bloccato. Riprova tra " +
             "cinque minuti";
     private static final String NO_TOKEN = "";
+    private static final String WAIT_FOR_SERVER_STR = "In attesa di comunicazione con il server";
 
     private Optional<BluetoothChannel> btChannel;
     private String token;
@@ -142,15 +143,7 @@ public class MainActivity extends AppCompatActivity {
                                                                         .filter(c -> c != 13 && c != 10)
                                                                         .mapToObj(c -> Character.toString((char) c))
                                                                         .collect(Collectors.joining());
-                            if (parsedMessage.equals(ControllerMessage.START_DEPOSIT.getMessage())) {
-                                // the deposit started, the trash type can't be changed
-                                Log.d(TAG, "Start deposit");
-                                final ServiceMessageBuilder builder = new ServiceMessageBuilder(ServiceMessageType.START_DEPOSIT);
-                                builder.setToken(token)
-                                       .setDepositPhase("begin")
-                                       .build()
-                                       .send(p -> startDepositAnswerManager(p));
-                            } else if (parsedMessage.equals(ControllerMessage.STOP_DEPOSIT.getMessage())) {
+                            if (parsedMessage.equals(ControllerMessage.STOP_DEPOSIT.getMessage())) {
                                 Log.d(TAG, "End deposit");
                                 // stopping keep alive messages
                                 keepAliveExecutor.shutdownNow();
@@ -194,6 +187,7 @@ public class MainActivity extends AppCompatActivity {
                         @Override
                         public void onConnectionCanceled() {
                             Log.d(TAG, "BT connection canceled");
+                            disconnectBt();
                         }
                     };
             final ConnectToBluetoothServerTask connectTask = new ConnectToBluetoothServerTask(serverDevice, uuid, eventListener);
@@ -215,7 +209,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void sendTrashTypeMessage(final ControllerMessage type) {
-        this.btChannel.ifPresent(c -> c.sendMessage(type.getMessage()));
+        // the deposit started, the trash type can't be changed
+        Log.d(TAG, "Start deposit");
+        ((TextView) findViewById(R.id.errorText)).setText(WAIT_FOR_SERVER_STR);
+        final ServiceMessageBuilder builder = new ServiceMessageBuilder(ServiceMessageType.START_DEPOSIT);
+        builder.setToken(token)
+               .setDepositPhase("begin")
+               .build()
+               .send(p -> this.startDepositAnswerManager(p, type));
     }
 
     private void enableTrashButtons() {
@@ -243,10 +244,12 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.askTokenButton).setEnabled(true);
     }
 
-    private void startDepositAnswerManager(final Optional<Pair<Integer, String>> p) {
+    private void startDepositAnswerManager(final Optional<Pair<Integer, String>> p, final ControllerMessage type) {
         if (p.isPresent() && isOkCode(p.get().first)) {
             // deposit start correctly communicated to the service
             this.disableTrashButtons();
+            ((TextView) findViewById(R.id.errorText)).setText("");
+            this.btChannel.ifPresent(c -> c.sendMessage(type.getMessage()));
             findViewById(R.id.keepOpenButton).setEnabled(true);
             this.failuresCount = 0;
             keepAliveExecutor.scheduleAtFixedRate(this::keepAliveTask, KEEP_ALIVE_PERIOD, KEEP_ALIVE_PERIOD, TimeUnit.SECONDS);
