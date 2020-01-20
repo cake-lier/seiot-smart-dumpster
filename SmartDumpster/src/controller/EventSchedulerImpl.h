@@ -8,7 +8,7 @@
 #include "../model/service/Service.h"
 
 /*
- * 
+ * A class used to execute a step of the system life.
  */
 class EventSchedulerImpl: public EventScheduler { 
     public:
@@ -21,7 +21,7 @@ class EventSchedulerImpl: public EventScheduler {
          */
         ~EventSchedulerImpl(void);
         /*
-         * 
+         * Executes a step.
          */
         void step(void) override;
     private:

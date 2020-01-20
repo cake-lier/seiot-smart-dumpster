@@ -5,12 +5,12 @@
 #include "Event.h"
 
 /*
- * 
+ * A class representing an event happened in the Edge.
  */
 class EventImpl: public Event { 
     public:
         /*
-         * 
+         * Constructor, requires the type of the event being constructed.
          */
         EventImpl(const EventType type);
         /*
@@ -18,7 +18,7 @@ class EventImpl: public Event {
          */
         ~EventImpl(void);
         /*
-         * 
+         * Returns the type of this event.
          */
         EventType getType(void) const override;
     private:

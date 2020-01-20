@@ -6,13 +6,14 @@
 #include "EventType.h"
 
 /*
- * 
+ * An handler for the events happening in the system.
  */
 template<class Function>
 class EventHandlerImpl: public EventHandler { 
     public:
         /*
-         *
+         * Default constructor, requires the type of event for which the EventHandler being built is thought
+         * and a Function that will be executed to handle the event.
          */
         EventHandlerImpl(const EventType type, Function handler);
         /*
@@ -20,11 +21,11 @@ class EventHandlerImpl: public EventHandler {
          */
         ~EventHandlerImpl(void);
         /*
-         * 
+         * Returns whether this EventHandler is for the given Event or not.
          */
         bool isForEvent(const Event &event) const override;
         /*
-         * 
+         * Executes the event handler.
          */
         void execute(void) const override;
     private:
