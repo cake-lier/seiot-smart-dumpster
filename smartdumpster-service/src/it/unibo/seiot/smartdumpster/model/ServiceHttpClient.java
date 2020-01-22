@@ -20,10 +20,11 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 
 /**
- * 
+ * A class representing the web client part of the Service, that interacts with the Edge to communicate the state of the
+ * current deposit.
  */
 public class ServiceHttpClient {
-    private static final String HOST = "192.168.1.38";
+    private static final String HOST = "192.168.43.109";
     private static final String LOGS_PATH = System.getProperty("user.home")
                                             + System.getProperty("file.separator")
                                             + "logs"
@@ -45,9 +46,9 @@ public class ServiceHttpClient {
     private final DumpsterEdge edge;
 
     /**
-     * 
+     * Builds a new {@link ServiceHttpClient}.
      * @param vertx the Vertx instance launched.
-     * @param edge a
+     * @param edge the {@link DumpsterEdge} representing inside the Service the physical Edge of the project.
      */
     public ServiceHttpClient(final Vertx vertx, final DumpsterEdge edge) {
         this.vertx = vertx;
@@ -55,8 +56,9 @@ public class ServiceHttpClient {
         this.edge = edge;
     }
     /**
-     * 
-     * @param routingContext the object holding information about the request made for this begin deposit action
+     * Requests to the physical Edge its current state, and prepares the response to the message that triggered the call to
+     * this function.
+     * @param routingContext the object holding information about the request made for this deposit action
      */
     public void getCurrentState(final RoutingContext routingContext) {
         final HttpServerResponse response = routingContext.response();
@@ -124,9 +126,10 @@ public class ServiceHttpClient {
         }).end();
     }
     /**
-     * 
+     * Communicates to the Edge its new state, as requested by the Dashboard, and prepares the response to the messages that
+     * triggered the call to this function.
      * @param available if the state of the smart dumpster controller has to be set to "available" or to "not available".
-     * @param routingContext the object holding information about the request made for this begin deposit action.
+     * @param routingContext the object holding information about the request made for this action.
      */
     public void setAvailableState(final boolean available, final RoutingContext routingContext) {
         final JsonObject jsonRequestBody = new JsonObject();
@@ -148,8 +151,9 @@ public class ServiceHttpClient {
                    .end(jsonRequestBody.encode());
     }
     /**
-     * 
-     * @param routingContext the object holding information about the request made for this begin deposit action.
+     * Communicates to the Edge the start of a deposit, and reports the result of the operation to whoever made the request for
+     * a deposit start.
+     * @param routingContext the object holding information about the request made for this action.
      */
     public void beginDeposit(final RoutingContext routingContext) {
         final JsonObject jsonRequestBody = new JsonObject();
@@ -164,8 +168,9 @@ public class ServiceHttpClient {
                    .end(jsonRequestBody.encode());
     }
     /**
-     * 
-     * @param routingContext the object holding information about the request made for this begin deposit action.
+     * Communicates to the Edge the end of a deposit, and reports the result of the operation to whoever made the request for
+     * a deposit end.
+     * @param routingContext the object holding information about the request made for this end deposit action.
      */
     public void endDeposit(final RoutingContext routingContext) {
         final JsonObject jsonRequestBody = new JsonObject();
@@ -234,7 +239,8 @@ public class ServiceHttpClient {
                    .end(jsonRequestBody.encode());
     }
     /**
-     * 
+     * Communicates to the Edge the end of a deposit, when it is caused by an event internal to the Service (like a timeout),
+     * instead of when it is caused by a communication from the Android App (use {@link #endDeposit(RoutingContext)} instead).
      */
     public void endDeposit() {
         final JsonObject jsonRequestBody = new JsonObject();

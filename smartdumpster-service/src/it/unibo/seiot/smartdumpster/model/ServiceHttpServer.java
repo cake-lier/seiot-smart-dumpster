@@ -30,7 +30,8 @@ import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.StaticHandler;
 
 /**
- * 
+ * A class representing the web server component of the Service. It manages http connections
+ * from the Android App, the Dashboard (a web browser) and the Edge, on different routes.
  */
 public class ServiceHttpServer extends AbstractVerticle {
     private static final int PORT = 8080;
@@ -69,7 +70,7 @@ public class ServiceHttpServer extends AbstractVerticle {
     private volatile long depositTimerID;
 
     /**
-     * 
+     * Builds a new {@link ServiceHttpServer}.
      */
     public ServiceHttpServer() {
         super();
@@ -80,7 +81,7 @@ public class ServiceHttpServer extends AbstractVerticle {
         this.depositTimerID = 0;
     }
     /**
-     * @throws Exception 
+     * {@inheritDoc}
      */
     @Override
     public void start() throws Exception {
@@ -100,7 +101,8 @@ public class ServiceHttpServer extends AbstractVerticle {
         this.vertx.createHttpServer().requestHandler(router).listen(PORT);
     }
     /*
-     * 
+     * Manager for messages received on the {@link #STATE_ROUTE} route, it is used for keeping the state of the representation of
+     * the Edge kept inside of the Service in line with the physical version.
      */
     private void changeEdgeState(final RoutingContext routingContext) {
         final JsonObject jsonRequestBody = routingContext.getBodyAsJson();
@@ -116,7 +118,8 @@ public class ServiceHttpServer extends AbstractVerticle {
                    .setAvailableState(jsonRequestBody.getBoolean(AVAILABLE_JSON_KEY), routingContext);
     }
     /*
-     * 
+     * Manager for messages received on the {@link #LOG_ROUTE}, it sends the log data (mantained on file) as an answer to the
+     * request.
      */
     private void getEdgeLog(final RoutingContext routingContext) {
         this.vertx.executeBlocking(promise -> {
@@ -160,7 +163,8 @@ public class ServiceHttpServer extends AbstractVerticle {
         });
     }
     /*
-     * 
+     * Manager for messages received on the {@link #TOKEN_ROUTE} route, it send a new token as an answer to the request
+     * received, it that request was correctly formatted and there is no other active token in use.
      */
     private void getToken(final RoutingContext routingContext) {
         final HttpServerResponse response = routingContext.response();
@@ -183,7 +187,7 @@ public class ServiceHttpServer extends AbstractVerticle {
         });
     }
     /*
-     * 
+     * Creates a new timer to check if a deposit has been going on for too long.
      */
     private void createDepositTimer() {
         this.depositTimerID = this.vertx.setTimer(DEPOSIT_DURATION_MS, id -> {
@@ -199,7 +203,8 @@ public class ServiceHttpServer extends AbstractVerticle {
         });
     }
     /*
-     * 
+     * Manager for messages received on the {@link #DEPOSIT_ROUTE} route, it checks if the message received is correctly
+     * formatted and authorized (using a correct token) and if so communicates to the Edge the status of the current deposit.
      */
     private void changeDepositState(final RoutingContext routingContext) {
         final HttpServerResponse response = routingContext.response();
@@ -259,7 +264,7 @@ public class ServiceHttpServer extends AbstractVerticle {
         }
     }
     /*
-     * 
+     * Manager for messages on the {@link #EARLY_END_ROUTE} route, coming from the Edge.
      */
     private synchronized void earlyEndDeposit(final RoutingContext routingContext) {
         final HttpServerResponse response = routingContext.response();

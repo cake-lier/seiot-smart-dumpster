@@ -1,7 +1,7 @@
 package it.unibo.seiot.smartdumpster.model;
 
 /**
- * 
+ * An implementation of {@link DumpsterEdge}.
  */
 public class DumpsterEdgeImpl implements DumpsterEdge {
     private boolean lastDepositEarlyEnded;
@@ -9,7 +9,7 @@ public class DumpsterEdgeImpl implements DumpsterEdge {
     private boolean isAvailable;
 
     /**
-     * 
+     * Builds a new {@link DumpsterEdgeImpl}.
      */
     public DumpsterEdgeImpl() {
         this.lastDepositEarlyEnded = false;
