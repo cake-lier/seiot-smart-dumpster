@@ -22,9 +22,9 @@
 	previo l'ottenimento di un codice speciale denominato ``token" da un componente, in esecuzione su un
 	\textit{host} separato dal bidone fisico, definito ``Service". Una volta ottenuto il token occorrerà
 	recarsi nei pressi del bidone, e collegarsi tramite Bluetooth alla componente ``Controller" del
-	sistema entro cinque minuti, pena la scadenza del token. Ad avvenuto collegamento, sarà
-	possibile scegliere il tipo di rifiuto da depositare ed
-	effettuare così richiesta per un deposito. L'app contatterà per primo il Service, notificandolo della
+	sistema. Ad avvenuto collegamento, sarà possibile scegliere il tipo di rifiuto da depositare ed
+	effettuare così richiesta per un deposito: la richiesta andrà effettuata entro cinque minuti dalla ricezione 
+	del token, pena la sua scadenza. L'app contatterà per primo il Service, notificandolo della
 	richiesta e, se il deposito sarà considerato possibile - ovvero se il sistema è nello stato ``\textit{available}"
 	e il token passato al Service è lo stesso fornito poco prima dal Service all'app -, esso procederà
 	con il notificare a sua volta la componente ``Edge" del sistema. Se questa operazione va a buon fine, 
@@ -48,7 +48,7 @@
 	ovvero il numero di depositi e la quantità totale depositata negli ultimi cinque giorni, e
 	forzare lo stato del sistema per ragioni di manutenzione ad ``\textit{available}" o
 	``\textit{not available}" in qualsiasi momento, anche durante un deposito, tenendo conto del fatto
-	che forzare lo stato del bidone a ``\textit{available}" significa anche averlo svuotato, operazione che 
+	che forzare lo stato del bidone ad ``\textit{available}" significa anche averlo svuotato, operazione che 
 	porta ad azzerare il peso correntemente contenuto al suo interno.
 	\begin{figure}[H]
 		\centering
@@ -206,7 +206,10 @@
 			asincrona come se si stesse usando la comunicazione seriale standard fornita da Arduino.\newline 
 			I messaggi sono costituiti da un solo carattere e perciò, avendo una struttura così
 			rigida, non è necessario l'uso di terminatori di messaggio (presenti però per come la comunicazione
-			Bluetooth è gestita dall'applicazione, essi vengono ignorati).\newline
+			Bluetooth è gestita dall'applicazione, essi vengono ignorati). I messaggi vengono convertiti in 
+			eventi da un ``EventGenerator'', che si occupa anche di generare eventi legati allo scorrere 
+			del tempo (come la fine del deposito), poi l'``HandlerManager'' si occupa di eseguire l'\textit{handler}
+			corretto per l'evento generato.\newline
 			In caso non sia presente alcun messaggio, l'oggetto che si occupa della comunicazione via
 			Bluetooth restituisce un messaggio vuoto. Questo viene poi a sua volta convertito dal
 			\textit{parser} in un evento nullo, a cui non è associato nessun \textit{handler} e che
@@ -229,7 +232,7 @@
 			La componente Model è suddivisa in tre sotto-componenti: una che contiene le classi che
 			rappresentano i componenti fisici con cui ESP va ad interagire, una per le classi che
 			contengono la logica di funzionamento dell'intero sistema, secondo un pattern di tipo
-			``Strategy", che altro non sono che sotto-classi dell'interfaccia ``Handler", quindi 
+			``Strategy", che altro non sono che sotto-classi dell'interfaccia ``EventHandler", quindi 
 			\textit{handler} di eventi specifici, e una che contiene tutte le classi per rappresentare
 			all'interno di Edge la componente Service e la possibilità di scambiare messaggi con essa.
 			Edge perciò, potendo sia inviare che ricevere messaggi, ed essendo questi scambiati via
