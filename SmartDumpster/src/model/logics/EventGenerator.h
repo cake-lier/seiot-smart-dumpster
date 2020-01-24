@@ -20,10 +20,11 @@ class EventGenerator {
          */
         virtual Event generateEventFromMessage(const Message message) const = 0;
         /*
-         * It generates a new event but only if the associated period has passed given in periods of the synchronous finite state
+         * It generates new events if the associated period has passed.
+         * The period is given in periods of the synchronous finite state
          * machine upon which this software is built.
          */
-        virtual vector<Event> *generatePeriodicEvent(const unsigned int currentInstant) const = 0; // TODO: change name
+        virtual vector<Event> *generatePeriodicEvents(const unsigned int currentInstant) const = 0; // TODO: change name
         /*
          * Default destructor.
          */

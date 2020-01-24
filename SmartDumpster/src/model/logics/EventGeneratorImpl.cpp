@@ -16,7 +16,7 @@ EventGeneratorImpl::EventGeneratorImpl(void)
         {Message::PREMATURE_END_DEPOSIT, Event::PREMATURE_END_DEPOSIT}
       })),
       intervalToEvent(new map<unsigned int, const vector<Event> *>({
-          {T_DELIVER, new const vector<Event>({Event::END_DEPOSIT})}
+          {T_DELIVER, new const vector<Event>({Event::END_DEPOSIT})} // the only periodic event is the end of the deposit
       })) {}
 
 EventGeneratorImpl::~EventGeneratorImpl(void) {
@@ -35,7 +35,7 @@ Event EventGeneratorImpl::generateEventFromMessage(const Message message) const 
            : Event::EMPTY;
 }
 
-vector<Event> *EventGeneratorImpl::generatePeriodicEvent(const unsigned int currentInstant) const {
+vector<Event> *EventGeneratorImpl::generatePeriodicEvents(const unsigned int currentInstant) const {
     auto events = new vector<Event>();
     for_each(this->intervalToEvent->begin(),
              this->intervalToEvent->end(),

@@ -25,10 +25,11 @@ class EventGeneratorImpl : public EventGenerator {
          */
         Event generateEventFromMessage(const Message message) const override;
         /*
-         * It generates a new event but only if the associated period has passed given in periods of the synchronous finite state
+         * It generates new events if the associated period has passed.
+         * The period is given in periods of the synchronous finite state
          * machine upon which this software is built.
          */
-        vector<Event> *generatePeriodicEvent(const unsigned int currentInstant) const override;
+        vector<Event> *generatePeriodicEvents(const unsigned int currentInstant) const override;
     private:
         const map<Message, Event> * const messageToEvent;
         const map<unsigned int, const vector<Event> *> * const intervalToEvent;

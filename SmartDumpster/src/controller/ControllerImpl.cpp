@@ -28,7 +28,7 @@ void ControllerImpl::run(void) {
        this->openCount++;
     }
     this->handlerManager->runEventHandler(this->eventGenerator->generateEventFromMessage(this->commSystem->receiveMessage()));
-    auto events = this->eventGenerator->generatePeriodicEvent(this->openCount);
+    auto events = this->eventGenerator->generatePeriodicEvents(this->openCount);
     for_each(events->begin(), events->end(), [&](const Event event) -> void {
         this->handlerManager->runEventHandler(event);
     });
