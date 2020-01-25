@@ -1,3 +1,4 @@
+/* Authors: Matteo Castellucci, Giorgia Rondinini */
 package it.unibo.seiot.gm.smartdumpsterapp;
 
 import android.content.Context;

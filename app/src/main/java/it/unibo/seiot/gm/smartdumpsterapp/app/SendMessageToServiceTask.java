@@ -1,3 +1,4 @@
+/* Authors: Matteo Castellucci, Giorgia Rondinini */
 package it.unibo.seiot.gm.smartdumpsterapp.app;
 
 import android.os.AsyncTask;
