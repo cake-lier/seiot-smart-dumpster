@@ -52,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
             "cinque minuti";
     private static final String NO_TOKEN = "";
     private static final String WAIT_FOR_SERVER_STR = "In attesa di comunicazione con il server";
+    private static final String DEPOSIT_STARTED = "Deposito iniziato";
 
     private Optional<BluetoothChannel> btChannel;
     private String token;
@@ -158,9 +159,13 @@ public class MainActivity extends AppCompatActivity {
                                        .send(p -> {
                                            findViewById(R.id.keepOpenButton).setEnabled(false);
                                            disableTrashButtons();
+                                           ((TextView) findViewById(R.id.statusText)).setText("");
                                            // the deposit ended, a new token can be requested
                                            resetToken();
                                        });
+                            } else if (parsedMessage.equals(ControllerMessage.START_DEPOSIT.getMessage())) {
+                                Log.d(TAG, "Start deposit");
+                                ((TextView) findViewById(R.id.statusText)).setText(DEPOSIT_STARTED);
                             } else {
                                 Log.d(TAG, "received ASCII " + receivedMessage.chars().boxed().collect(Collectors.toList()));
                             }
@@ -200,7 +205,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void requestToken(final View v) {
-        ((TextView) findViewById(R.id.errorText)).setText("");
+        ((TextView) findViewById(R.id.statusText)).setText("");
         ((TextView) findViewById(R.id.tokenText)).setText(REQUESTING_STR);
         new ServiceMessageBuilder(ServiceMessageType.GET_TOKEN).build().send(this::tokenRequestAnswerManager);
     }
@@ -212,7 +217,7 @@ public class MainActivity extends AppCompatActivity {
     private void sendTrashTypeMessage(final ControllerMessage type) {
         // the deposit started, the trash type can't be changed
         Log.d(TAG, "Start deposit");
-        ((TextView) findViewById(R.id.errorText)).setText(WAIT_FOR_SERVER_STR);
+        ((TextView) findViewById(R.id.statusText)).setText(WAIT_FOR_SERVER_STR);
         final ServiceMessageBuilder builder = new ServiceMessageBuilder(ServiceMessageType.START_DEPOSIT);
         builder.setToken(token)
                .setDepositPhase("begin")
@@ -249,7 +254,7 @@ public class MainActivity extends AppCompatActivity {
         if (p.isPresent() && isOkCode(p.get().first)) {
             // deposit start correctly communicated to the service
             this.disableTrashButtons();
-            ((TextView) findViewById(R.id.errorText)).setText("");
+            ((TextView) findViewById(R.id.statusText)).setText("");
             this.btChannel.ifPresent(c -> c.sendMessage(type.getMessage()));
             findViewById(R.id.keepOpenButton).setEnabled(true);
             this.failuresCount = 0;
@@ -259,7 +264,7 @@ public class MainActivity extends AppCompatActivity {
             // - stop deposit, because it can't be tracked
             // - allow for new token request
             this.btChannel.ifPresent(c -> c.sendMessage(ControllerMessage.PREMATURE_STOP_DEPOSIT.getMessage()));
-            ((TextView) findViewById(R.id.errorText)).setText(COMM_SERVICE_ERROR);
+            ((TextView) findViewById(R.id.statusText)).setText(COMM_SERVICE_ERROR);
             this.disableTrashButtons();
             this.resetToken();
             keepAliveExecutor.shutdownNow();
@@ -287,7 +292,7 @@ public class MainActivity extends AppCompatActivity {
             }
         } else {
             ((TextView) findViewById(R.id.tokenText)).setText(NO_TOKEN);
-            ((TextView) findViewById(R.id.errorText)).setText(REQUEST_ERROR_STR);
+            ((TextView) findViewById(R.id.statusText)).setText(REQUEST_ERROR_STR);
             Log.d(TAG, REQUEST_ERROR_STR);
         }
     }
