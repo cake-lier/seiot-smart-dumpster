@@ -12,7 +12,7 @@ using namespace std;
 
 /*
  * The class which has the responsibility of managing the handlers which have to be executed while this software is executing.
- * It can add a new event handler to the list of the already inserted ones or executing all the handlers which are bind to a
+ * It can add a new event handler to the list of the already inserted ones or execute all the handlers that are bound to a
  * specified event that has happened.
  */
 class HandlerManagerImpl : public HandlerManager {

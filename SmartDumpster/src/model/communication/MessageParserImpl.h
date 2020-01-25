@@ -21,11 +21,11 @@ class MessageParserImpl : public MessageParser {
          */
         ~MessageParserImpl(void);
         /*
-         * Parses the string and returns the corresponding Message.
+         * Parses the char and returns the corresponding Message.
          */
         Message decodeCharToMessage(const char charMessage) const override;
         /*
-         * Returns the string corresponding to the Message.
+         * Returns the char corresponding to the Message.
          */
         char encodeMessageToChar(const Message message) const override;
     private:

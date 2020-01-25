@@ -5,9 +5,9 @@
 #include "Message.h"
 
 /*
- * The communication system, the class responsible for making the software communicating with the outside. It's required to be
+ * The communication system, the class responsible for allowing the software to communicate with the outside. It's required to be
  * capable of sending and receiving messages following a specific format. There is no need for checking if the message queue has
- * messages in a given moment or not, the method for receiving messages will return a special message giving the information that
+ * messages in a given moment or not, the method for receiving messages will return a special message if
  * there were no new messages.
  */
 class CommunicationSystem { 

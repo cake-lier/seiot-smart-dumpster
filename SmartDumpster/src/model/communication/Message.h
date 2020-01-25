@@ -3,7 +3,7 @@
 #define __MESSAGE__
 
 /*
- * This enum represents the various type of messages that this software can undestand, so it can receive and send.
+ * This enum represents the various type of messages that this software can understand, and so receive and send.
  */
 enum class Message {
     /*
@@ -27,11 +27,11 @@ enum class Message {
      */
     KEEP_OPEN,
     /*
-     * This message indicates the ending of a deposit.
+     * This message indicates the end of a deposit.
      */
     END_DEPOSIT,
     /*
-     * This message indicates the need of ending a deposit before time.
+     * This message indicates the need of end a deposit before time.
      */
     PREMATURE_END_DEPOSIT,
     /*

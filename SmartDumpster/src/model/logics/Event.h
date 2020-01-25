@@ -19,15 +19,15 @@ enum class Event {
      */
     START_DEPOSIT_TRASH_C,
     /*
-     * The event corresponding to the ending of a deposit of trash of any type.
+     * The event corresponding to the end of a deposit of trash of any type.
      */
     END_DEPOSIT,
     /*
-     * The event corresponding to a request of resetting the time for which the trashcan door is being keeping open.
+     * The event corresponding to a request of resetting the time for which the trashcan door is being kept open.
      */
     KEEP_OPEN,
     /*
-     * The event corresponding ti the temrination of a deposit before time.
+     * The event corresponding to the termination of a deposit before time.
      */
     PREMATURE_END_DEPOSIT,
     /*
