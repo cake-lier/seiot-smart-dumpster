@@ -8,4 +8,12 @@
   <string name="tokenText">token</string>
   <string name="keepOpenText">Prolunga apertura</string>
   <string name="btStatusText">non connesso</string>
+  <string name="requestingStr">Richiesta in corso</string>
+  <string name="connectedStr">connesso</string>
+  <string name="notConnectedStr">non connesso</string>
+  <string name="requestErrorStr">Errore, chiudi l\'app e riprova. Potrebbe esssere necessario aspettare alcuni minuti</string>
+  <string name="commServiceError">Impossibile comunicare il server, il deposito sará bloccato. Riprova tra cinque minuti</string>
+  <string name="noTokenStr"></string>
+  <string name="waitForServerStr">In attesa di comunicazione con il server</string>
+  <string name="depositStartedStr">Deposito iniziato</string>
 </resources>

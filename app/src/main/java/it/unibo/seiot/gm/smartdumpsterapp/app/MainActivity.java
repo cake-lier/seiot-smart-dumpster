@@ -42,17 +42,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int CORE_POOL_SIZE = 1;
     private static final long KEEP_ALIVE_PERIOD = 90L;
     private static final String BT_TARGET_NAME = "bl-arduino";
-    private static final String REQUESTING_STR = "Richiesta in corso";
     private static final String TAG = "SmartDumpsterApp_Main";
-    private static final String CONNECTED_STR = "connesso";
-    private static final String NOT_CONNECTED_STR = "non connesso";
-    private static final String REQUEST_ERROR_STR = "Errore, chiudi l'app e riprova. Potrebbe esssere necessario aspettare " +
-            "alcuni minuti";
-    private static final String COMM_SERVICE_ERROR = "Impossibile comunicare il server, il deposito sará bloccato. Riprova tra " +
-            "cinque minuti";
-    private static final String NO_TOKEN = "";
-    private static final String WAIT_FOR_SERVER_STR = "In attesa di comunicazione con il server";
-    private static final String DEPOSIT_STARTED = "Deposito iniziato";
 
     private Optional<BluetoothChannel> btChannel;
     private String token;
@@ -63,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        this.token = NO_TOKEN;
+        this.token = getString(R.string.noTokenStr);
         /* activate bluetooth */
         btChannel = Optional.empty();
         this.activateBT();
@@ -165,7 +155,7 @@ public class MainActivity extends AppCompatActivity {
                                        });
                             } else if (parsedMessage.equals(ControllerMessage.START_DEPOSIT.getMessage())) {
                                 Log.d(TAG, "Start deposit");
-                                ((TextView) findViewById(R.id.statusText)).setText(DEPOSIT_STARTED);
+                                ((TextView) findViewById(R.id.statusText)).setText(getString(R.string.depositStartedStr));
                             } else {
                                 Log.d(TAG, "received ASCII " + receivedMessage.chars().boxed().collect(Collectors.toList()));
                             }
@@ -183,9 +173,9 @@ public class MainActivity extends AppCompatActivity {
                             btChannel = Optional.ofNullable(channel); // can't be sure null will not be passed as parameter
                             btChannel.ifPresent(c -> {
                                 c.registerListener(listener);
-                                ((TextView) findViewById(R.id.btStatus)).setText(CONNECTED_STR);
+                                ((TextView) findViewById(R.id.btStatus)).setText(getString(R.string.connectedStr));
                                 findViewById(R.id.connectButton).setEnabled(false);
-                                if (!token.equals(NO_TOKEN)) {
+                                if (!token.equals(getString(R.string.noTokenStr))) {
                                     setEnableTrashButtons(true);
                                 }
                             });
@@ -206,7 +196,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void requestToken(final View v) {
         ((TextView) findViewById(R.id.statusText)).setText("");
-        ((TextView) findViewById(R.id.tokenText)).setText(REQUESTING_STR);
+        ((TextView) findViewById(R.id.tokenText)).setText(getString(R.string.requestingStr));
         new ServiceMessageBuilder(ServiceMessageType.GET_TOKEN).build().send(this::tokenRequestAnswerManager);
     }
 
@@ -217,7 +207,7 @@ public class MainActivity extends AppCompatActivity {
     private void sendTrashTypeMessage(final ControllerMessage type) {
         // the deposit started, the trash type can't be changed
         Log.d(TAG, "Start deposit");
-        ((TextView) findViewById(R.id.statusText)).setText(WAIT_FOR_SERVER_STR);
+        ((TextView) findViewById(R.id.statusText)).setText(getString(R.string.waitForServerStr));
         final ServiceMessageBuilder builder = new ServiceMessageBuilder(ServiceMessageType.START_DEPOSIT);
         builder.setToken(token)
                .setDepositPhase("begin")
@@ -245,7 +235,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void resetToken() {
-        this.token = NO_TOKEN;
+        this.token = getString(R.string.noTokenStr);
         ((TextView) findViewById(R.id.tokenText)).setText(this.token);
         findViewById(R.id.askTokenButton).setEnabled(true);
     }
@@ -264,7 +254,7 @@ public class MainActivity extends AppCompatActivity {
             // - stop deposit, because it can't be tracked
             // - allow for new token request
             this.btChannel.ifPresent(c -> c.sendMessage(ControllerMessage.PREMATURE_STOP_DEPOSIT.getMessage()));
-            ((TextView) findViewById(R.id.statusText)).setText(COMM_SERVICE_ERROR);
+            ((TextView) findViewById(R.id.statusText)).setText(getString(R.string.commServiceError));
             this.disableTrashButtons();
             this.resetToken();
             keepAliveExecutor.shutdownNow();
@@ -284,16 +274,16 @@ public class MainActivity extends AppCompatActivity {
                     findViewById(R.id.askTokenButton).setEnabled(false);
                     Log.d(TAG, "token: " + this.token);
                 } else {
-                    ((TextView) findViewById(R.id.tokenText)).setText(NO_TOKEN);
+                    ((TextView) findViewById(R.id.tokenText)).setText(getString(R.string.noTokenStr));
                     Log.d(TAG, "No token received");
                 }
             } catch (JSONException e) {
                 Log.e(TAG, e.getMessage());
             }
         } else {
-            ((TextView) findViewById(R.id.tokenText)).setText(NO_TOKEN);
-            ((TextView) findViewById(R.id.statusText)).setText(REQUEST_ERROR_STR);
-            Log.d(TAG, REQUEST_ERROR_STR);
+            ((TextView) findViewById(R.id.tokenText)).setText(getString(R.string.noTokenStr));
+            ((TextView) findViewById(R.id.statusText)).setText(getString(R.string.requestErrorStr));
+            Log.d(TAG, getString(R.string.requestErrorStr));
         }
     }
 
@@ -316,7 +306,7 @@ public class MainActivity extends AppCompatActivity {
     private void disconnectBt() {
         this.btChannel.ifPresent(BluetoothChannel::close);
         this.btChannel = Optional.empty();
-        ((TextView) findViewById((R.id.btStatus))).setText(NOT_CONNECTED_STR);
+        ((TextView) findViewById((R.id.btStatus))).setText(getString(R.string.notConnectedStr));
         findViewById(R.id.connectButton).setEnabled(true);
     }
 
