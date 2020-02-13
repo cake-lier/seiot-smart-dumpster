@@ -33,13 +33,7 @@ class ServiceImpl: public Service {
          */
         String sendMessage(const MessageType type, const String resource, const JsonDocument &payload) const;
     private:
-        /*
-         * The web server managing the communication with the Service.
-         */
         ESP8266WebServer * const server;
-        /*
-         * The list of messages received from the Service and still not examined.
-         */ 
         LinkedList<const Message *> * const messageBox;
 };
 

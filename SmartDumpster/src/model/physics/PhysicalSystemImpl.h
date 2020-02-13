@@ -30,10 +30,6 @@ class PhysicalSystemImpl : public PhysicalSystem {
          */
         void turnOffAvailableLed(void);
         /*
-         * It returns if the "available" led is currently on or not.
-         */
-        bool isOnAvailableLed(void) const;
-        /*
          * It turns on the "not available" led.
          */
         void turnOnNotAvailableLed(void);
@@ -41,10 +37,6 @@ class PhysicalSystemImpl : public PhysicalSystem {
          * It turns off the "not available" led.
          */
         void turnOffNotAvailableLed(void);
-        /*
-         * It returns if the "not available" led is currently on or not.
-         */
-        bool isOnNotAvailableLed(void) const;
         /*
          * It returns the weight of the trash put into the dumpster as simulated by the potentiometer.
          */

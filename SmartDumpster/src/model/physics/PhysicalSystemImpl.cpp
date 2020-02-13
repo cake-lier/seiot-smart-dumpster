@@ -32,20 +32,12 @@ void PhysicalSystemImpl::turnOffAvailableLed(void) {
     this->availableLed->switchOff();
 }
 
-bool PhysicalSystemImpl::isOnAvailableLed(void) const {
-    return this->availableLed->isOn();
-}
-
 void PhysicalSystemImpl::turnOnNotAvailableLed(void) {
     this->notAvailableLed->switchOn();
 }
 
 void PhysicalSystemImpl::turnOffNotAvailableLed(void) {
     this->notAvailableLed->switchOff();
-}
-
-bool PhysicalSystemImpl::isOnNotAvailableLed(void) const {
-    return this->notAvailableLed->isOn();
 }
 
 int PhysicalSystemImpl::getWeight(void) const {

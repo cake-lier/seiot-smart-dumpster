@@ -10,7 +10,7 @@
 class MessageImpl: public Message { 
     public:
         /*
-         * Constructor. Requires the type of the message being built, the route where the message
+         * This constructor requires the type of the message being built, the route where the message
          * will be sent (or the route from which it has been received) and the content of the message
          * as a JsonDocument.
          */

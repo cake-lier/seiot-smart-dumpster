@@ -6,7 +6,7 @@
 #include <Arduino.h>
 #include <ArduinoJson.h>
 /*
- * A message from the Edge to the Service, or viceversa. 
+ * A message from the Edge to the Service, or vice versa. 
  */
 class Message { 
     public:

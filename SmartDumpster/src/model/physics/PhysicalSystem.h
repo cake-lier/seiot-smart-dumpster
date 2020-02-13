@@ -18,10 +18,6 @@ class PhysicalSystem {
          */
         virtual void turnOffAvailableLed(void) = 0;
         /*
-         * It returns if the "available" led is currently on or not.
-         */
-        virtual bool isOnAvailableLed(void) const = 0;
-        /*
          * It turns on the "not available" led.
          */
         virtual void turnOnNotAvailableLed(void) = 0;
@@ -29,10 +25,6 @@ class PhysicalSystem {
          * It turns off the "not available" led.
          */
         virtual void turnOffNotAvailableLed(void) = 0;
-        /*
-         * It returns if the "not available" led is currently on or not.
-         */
-        virtual bool isOnNotAvailableLed(void) const = 0;
         /*
          * It returns the weight of the trash put into the dumpster as simulated by the potentiometer.
          */

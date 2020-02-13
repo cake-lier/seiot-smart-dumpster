@@ -3,8 +3,8 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266HTTPClient.h>
 
-#define SSID "Android Gio"
-#define PSWD "HellIfISay18"
+#define SSID ""
+#define PSWD ""
 #define PORT 80
 #define STATUS_URI "/state"
 #define DEPOSIT_URI "/deposit"
@@ -12,7 +12,7 @@
 #define FIELD_ERROR "One or more fields are missing"
 #define TYPE_ERROR "One or more fields have an incorrect value type"
 #define REQUEST_ERROR "The request could not be fullfilled"
-#define SERVICE_URL "http://192.168.43.201:8080"
+#define SERVICE_URL "http://192.168.1.11:8080"
 
 ServiceImpl::ServiceImpl(void) 
     : server(new ESP8266WebServer(PORT)), messageBox(new LinkedList<const Message *>()) {
