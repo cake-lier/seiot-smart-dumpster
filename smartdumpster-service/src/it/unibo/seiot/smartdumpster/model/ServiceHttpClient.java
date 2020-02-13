@@ -49,7 +49,7 @@ public class ServiceHttpClient {
     /**
      * Builds a new {@link ServiceHttpClient}.
      * @param vertx the Vertx instance launched.
-     * @param edge the {@link DumpsterEdge} representing inside the Service the physical Edge of the project.
+     * @param edge the {@link DumpsterEdge} representing inside the Service the physical Edge component of the project.
      */
     public ServiceHttpClient(final Vertx vertx, final DumpsterEdge edge) {
         this.vertx = vertx;

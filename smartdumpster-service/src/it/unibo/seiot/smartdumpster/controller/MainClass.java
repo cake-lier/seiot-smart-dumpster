@@ -14,6 +14,7 @@ import it.unibo.seiot.smartdumpster.model.ServiceHttpServer;
  */
 public final class MainClass {
     /**
+     * The main method, creates a new Vertx instance to use a web server and a web client.
      * @param args Unused.
      */
     public static void main(final String[] args) {

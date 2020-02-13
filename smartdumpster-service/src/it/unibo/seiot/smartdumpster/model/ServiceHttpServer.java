@@ -32,7 +32,7 @@ import io.vertx.ext.web.handler.StaticHandler;
 
 /**
  * A class representing the web server component of the Service. It manages http connections
- * from the Android App, the Dashboard (a web browser) and the Edge, on different routes.
+ * from the Android App, the Dashboard (its frontend accessible by a user agent) and the Edge, on different routes.
  */
 public class ServiceHttpServer extends AbstractVerticle {
     private static final int PORT = 8080;
@@ -102,8 +102,8 @@ public class ServiceHttpServer extends AbstractVerticle {
         this.vertx.createHttpServer().requestHandler(router).listen(PORT);
     }
     /*
-     * Manager for messages received on the {@link #STATE_ROUTE} route, it is used for keeping the state of the representation of
-     * the Edge kept inside of the Service in line with the physical version.
+     * Manager for messages received on the {@link #STATE_ROUTE} route, it is used for requsting the change of state to the Edge
+     * component while keeping the representation of it kept inside of the Service in line with the physical version.
      */
     private void changeEdgeState(final RoutingContext routingContext) {
         final JsonObject jsonRequestBody = routingContext.getBodyAsJson();
@@ -165,7 +165,7 @@ public class ServiceHttpServer extends AbstractVerticle {
     }
     /*
      * Manager for messages received on the {@link #TOKEN_ROUTE} route, it send a new token as an answer to the request
-     * received, it that request was correctly formatted and there is no other active token in use.
+     * received, if that request was correctly formatted and there is no other active token in use.
      */
     private void getToken(final RoutingContext routingContext) {
         final HttpServerResponse response = routingContext.response();
@@ -265,7 +265,8 @@ public class ServiceHttpServer extends AbstractVerticle {
         }
     }
     /*
-     * Manager for messages on the {@link #EARLY_END_ROUTE} route, coming from the Edge.
+     * Manager for messages on the {@link #EARLY_END_ROUTE} route, coming from the Edge, for registering the premature end of the
+     * deposit and keeping aligned the internal representation of the Edge component.
      */
     private synchronized void earlyEndDeposit(final RoutingContext routingContext) {
         final HttpServerResponse response = routingContext.response();

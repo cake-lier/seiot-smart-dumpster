@@ -34,7 +34,7 @@ public interface DumpsterEdge {
      */
     boolean hasLastDepositEarlyEnded();
     /**
-     * Sets whether the last deposit has ended prematurely. If so, and if there is a deposit in progress, terminates the deposit.
+     * Sets whether the last deposit has ended prematurely. If so, it sets the state to "unavailable".
      * @param earlyEnded whether the last deposit terminated early or not
      */
     void setEarlyEnd(boolean earlyEnded);

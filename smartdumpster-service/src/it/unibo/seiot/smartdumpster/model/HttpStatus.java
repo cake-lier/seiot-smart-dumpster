@@ -28,7 +28,7 @@ public enum HttpStatus {
         this.code = code;
     }
     /**
-     *  Returns the HTTP protocol status code associated with this status.
+     * Returns the HTTP protocol status code associated with this status.
      * @return the HTTP protocol status code associated with this status
      */
     public int getCode() {
