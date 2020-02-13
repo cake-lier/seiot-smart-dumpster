@@ -241,7 +241,7 @@ public class ServiceHttpServer extends AbstractVerticle {
                 this.edge.setEarlyEnd(false);
                 this.client.orElseThrow(IllegalStateException::new).beginDeposit(routingContext);
             } else if (operation.equals(END_DEPOSIT_JSON_VALUE)) {
-                if (!this.edge.hasDepositBegun()) {
+                if (!this.edge.hasDepositBegun() || !this.edge.isStateAvailable()) {
                     response.setStatusCode(HttpStatus.FORBIDDEN.getCode()).end();
                     return;
                 }
