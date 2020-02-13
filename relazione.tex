@@ -150,17 +150,16 @@
 			Il sistema Edge del sistema è anch'esso costituito da due componenti fondamentali, una di
 			\textit{Model} e una di \textit{Controller}, rispecchiando una versione modificata del
 			pattern MVC senza la componente di \textit{View}.\newline
-			Il Controller è stato realizzato mediante il pattern ``Event-loop", dove ad ogni iterazione
+			Il \textit{Controller} è stato realizzato mediante il pattern ``Event-loop", dove ad ogni iterazione
 			del ciclo di esecuzione principale si controlla se sono arrivati nuovi messaggi sotto forma
 			di richieste HTTP al \textit{webserver} che esegue all'interno del SoC. Se sono presenti connessioni in attesa
 			da parte dell'unico possibile \textit{client}, Service, queste vengono accettate e si
 			estraggono i dati dalle richieste HTTP ricevute su esse per formare gli oggetti messaggio. Questi vengono poi, uno per
-			iterazione, trasformati dall'Event-loop in eventi ed affidati al cosiddetto ``EventHandlerManager". 
-			Questo si preoccupa di metterli in una coda di eventi che è il cuore
-			del pattern ``Event-loop". Dopodiché, si estrae un evento per iterazione dalla coda e lo si
+			iterazione, trasformati in eventi ed affidati al cosiddetto ``EventHandlerManager", 
+			che si preoccupa di metterli in una coda di eventi. Ad ogni iterazione poi si estrae un evento dalla coda e lo si
 			riaffida all'EventHandlerManager affinché esegua il comportamento associato a
-			quell'evento, ovverosia il suo \textit{handler}. In questo modo l'Event-loop è a conoscenza
-			di quale evento viene gestito ad ogni iterazione.\newline
+			quell'evento, ovvero il suo \textit{handler}. In questo modo nell'Event-loop a ogni iterazione 
+			viene gestito un evento.\newline
 			I possibili eventi che
 			l'Edge riesce a gestire sono il passaggio allo stato ``\textit{unavailable}'' e quello allo
 			stato ``\textit{available}", dove quest'ultimo presenta la particolarità di azzerare il peso
