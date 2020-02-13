@@ -100,8 +100,11 @@
 			che il sistema deve pilotare. Il \textit{Controller} è realizzato usando il pattern ``Event-loop", dove il
 			sistema resta in attesa di nuovi messaggi trasmessi mediante Bluetooth e, ad ogni iterazione del 
 			loop, converte in eventi i messaggi ricevuti, cioè converte elementi di \textit{Model} in
-			elementi di \textit{Controller}. A questo punto, si controlla se nella \textit{event queue} sono
-			presenti eventi: nel caso si estraggono e si eseguono i relativi \textit{handler}, che
+			elementi di \textit{Controller}. In questo modo il buffer della comunicazione Bluetooth funge da 
+			coda di eventi, da cui viene estratto un messaggio (convertito in evento) ad ogni iterazione.\newline
+			Ad ogni iterazione possono anche essere generati degli eventi ``periodici'', come l'evento di terminazione 
+			del deposito. Per tutti gli eventi disponibili, quindi sia quelli periodici sia quelli ricevuti dal 
+			sistema di comunicazione, vengono eseguiti i relativi \textit{handler}, che
 			conterranno il comportamento da eseguire in caso accada quello specifico evento. I
 			messaggi che può ricevere Arduino sono o per iniziare il deposito per uno dei tre
 			tipi di rifiuto, o per richiedere un'estensione di tempo per il deposito, o per terminare
