@@ -32,7 +32,9 @@
 	desidera depositare scegliendolo tra tre tipi - A, B o C - e questo aprirà gli sportelli per permettere
 	all'utente di depositare i rifiuti. L'utente
 	avrà un minuto per effettuare un deposito, dopo il quale le porte si chiuderanno e il bidone
-	incamererà i rifiuti depositati. A questo punto, la componente Controller invierà un messaggio di
+	incamererà i rifiuti depositati. In caso l'utente ritenesse che un minuto di tempo sia troppo poco
+	per effettuare il deposito dei rifiuti, egli tramite l'app potrà richiedere un'estensione del tempo a
+	sua disposizione azzerando il cronometro interno. Chiuse le porte, la componente Controller invierà un messaggio di
 	terminazione deposito all'applicazione, che a sua volta notificherà il Service. Nel caso in cui
 	l'utente abbia inserito troppi rifiuti eccedendo il peso massimo che il bidone può contenere, la
 	componente Edge si preoccuperà di notificare immediatamente il Service, inviandogli anche il peso caricato fino a
@@ -52,7 +54,7 @@
 	porta ad azzerare il peso correntemente contenuto al suo interno.
 	\begin{figure}[H]
 		\centering
-		\includegraphics[height=\textheight]{"img/Sequence"}    
+		\includegraphics[height=0.93\textheight]{"img/Sequence"}    
 		\caption{Diagramma di sequenza con le interazioni tra le componenti del sistema}
 	\end{figure}
 	\begin{figure}[H]
@@ -78,37 +80,43 @@
 		\end{figure}
 		\section{Design architetturale}
 			\subsection{Dashboard}
-			Il sito che realizza la ``Dashboard" è realizzato mediante risorse statiche dotate
-			della struttura di base, ma senza alcuna informazione dentro. I dati vengono inseriti e il
+			Il sito che realizza la Dashboard è realizzato mediante risorse statiche dotate
+			della struttura di base, ma senza alcuna informazione al loro interno. I dati vengono inseriti e il
 			comportamento messo in atto mediante chiamate asincrone effettuate dallo \textit{user agent}
 			una volta che la pagina è totalmente caricata, permettendo perciò di non avere pagine web
-			che necessitano di \textit{preprocessing} lato server.
+			che necessitano di \textit{preprocessing} lato server. La possibilità di ricevere informazioni
+			di \textit{log} è separata rispetto alla visualizzazione delle informazioni di base come
+			il numero di depositi giornalieri eseguiti e il peso corrente contenuto nel bidone, perché
+			ritenute non fondamentali e per limitare i tempi di caricamento della pagina.
 			\begin{figure}[H]
 				\centering
 				\includegraphics[width=0.7\textwidth]{"img/DashboardStatechart"}    
 				\caption{Diagramma di stato per la componente Dashboard}
 			\end{figure}
 			\subsection{Controller}
-			Il sistema ``Controller" è costituito da due componenti fondamentali, una di \textit{Model}
+			Il sistema Controller è costituito da due componenti fondamentali, una di \textit{Model}
 			e una di \textit{Controller}, cercando di replicare il pattern MVC senza però una componente
-			di \textit{View}. Il \textit{Controller} è realizzato usando il pattern ``Event-loop", dove il
+			di \textit{View}. Il \textit{Model} ha il compito di rappresentare i sensori e gli attuatori
+			che il sistema deve pilotare. Il \textit{Controller} è realizzato usando il pattern ``Event-loop", dove il
 			sistema resta in attesa di nuovi messaggi trasmessi mediante Bluetooth e, ad ogni iterazione del 
-			loop, converte in eventi i messaggi ricevuti, cioè converte elementi di Model in
-			elementi di Controller. A questo punto, si controlla se nella \textit{event queue} sono
+			loop, converte in eventi i messaggi ricevuti, cioè converte elementi di \textit{Model} in
+			elementi di \textit{Controller}. A questo punto, si controlla se nella \textit{event queue} sono
 			presenti eventi: nel caso si estraggono e si eseguono i relativi \textit{handler}, che
 			conterranno il comportamento da eseguire in caso accada quello specifico evento. I
 			messaggi che può ricevere Arduino sono o per iniziare il deposito per uno dei tre
-			tipi di rifiuto oppure per richiedere un'estensione di tempo per il deposito.
+			tipi di rifiuto, o per richiedere un'estensione di tempo per il deposito, o per terminare
+			anticipatamente il deposito in caso di errore. Dopo la ricezione di un messaggio per l'inizio
+			o per il termine di un deposito Arduino invia un messaggio di conferma di avvenuta ricezione.
 			\begin{figure}[H]
 				\centering
 				\includegraphics[width=0.7\textwidth]{"img/ControllerStatechart"}    
 				\caption{Diagramma di stato per la componente Controller}
 			\end{figure}
 			\subsection{App}
-			L'applicazione è costituita da una sola \emph{Activity} che possiede i bottoni necessari per
-			avviare tutte le azioni che l'utente deve essere in grado di compiere tramite essa. Questi vengono abilitati e
+			L'applicazione è costituita da una sola \textit{Activity} che possiede i bottoni necessari per
+			avviare tutte le azioni che l'utente deve essere in grado di compiere. Questi vengono abilitati e
 			disabilitati mano a mano che si passa attraverso le varie fasi del deposito di rifiuti.
-			Inizialmente è infatti possibile solamente connettersi ad un bidone via Bluetooth o
+			Inizialmente è infatti possibile solamente connettersi al bidone via Bluetooth o
 			richiedere un token con i due bottoni a disposizione. Quando si è connessi e si ha anche
 			ricevuto un token l'app abilita i bottoni per scegliere il tipo di rifiuto e
 			conseguentemente far partire il deposito, disabilitando i precedenti. Premuto uno qualsiasi
@@ -116,7 +124,16 @@
 			richiesta e, se tutto è andato a buon fine, si comunica la stessa cosa al Controller,
 			fornendogli anche il tipo di rifiuto scelto. Il deposito può così iniziare, il pulsante 
 			per l'estensione del tempo di deposito  viene abilitato e l'app inizia a inviare periodicamente 
-			al Service dei messaggi di ``keep alive'' per segnalargli che il deposito è ancora in corso. Al termine del tempo, l'app 
+			al Service dei messaggi di ``keep-alive'' per segnalargli che il deposito è ancora in corso.
+			Questo è importante per fronteggiare gli eventuali problemi indotti dall'improvvisa mancanza
+			di connettività tra applicazione e Service, che rischierebbe di far rimanere quest'ultimo
+			indeterminatamente
+			in uno stato di ``deposito avviato" fino a che qualcuno non riavvia il sistema. Così
+			facendo, in caso passasse un tempo sufficientemente lungo dall'ultimo messaggio di
+			``keep-alive" ricevuto, il Service è legittimato a terminare il deposito egli stesso e a
+			ritornare disponibile per il prossimo utente, nel caso possa farlo. Questo perché si suppone
+			sempre che sia avvenuta una perdita di connettività tra le due parti.
+			Al termine del tempo, l'app 
 			si preoccuperà di comunicare al Service la terminazione del deposito, disabilitando il pulsante 
 			per l'estensione del tempo di apertura del cassonetto e tornando così alla configurazione iniziale 
 			della GUI dell'app, eventualmente lasciando disabilitato il pulsante per connettersi via Bluetooth 
@@ -127,14 +144,14 @@
 				\caption{Diagramma di stato per l'applicazione}
 			\end{figure}
 			\subsection{Edge}
-			Il sistema "Edge" del sistema è anch'esso costituito da due componenti fondamentali, una di
+			Il sistema Edge del sistema è anch'esso costituito da due componenti fondamentali, una di
 			\textit{Model} e una di \textit{Controller}, rispecchiando una versione modificata del
 			pattern MVC senza la componente di \textit{View}.\newline
 			Il Controller è stato realizzato mediante il pattern ``Event-loop", dove ad ogni iterazione
 			del ciclo di esecuzione principale si controlla se sono arrivati nuovi messaggi sotto forma
-			di richieste HTTP al Web Server che esegue all'interno del SoC. Se sono presenti connessioni in attesa
-			da parte dell'unico possibile client, il Service, queste vengono accettate e si
-			estraggono i dati dalle richieste HTTP ricevute su esse per formare oggetti di tipo Message. Questi vengono poi, uno per
+			di richieste HTTP al \textit{webserver} che esegue all'interno del SoC. Se sono presenti connessioni in attesa
+			da parte dell'unico possibile \textit{client}, Service, queste vengono accettate e si
+			estraggono i dati dalle richieste HTTP ricevute su esse per formare gli oggetti messaggio. Questi vengono poi, uno per
 			iterazione, trasformati dall'Event-loop in eventi ed affidati al cosiddetto ``EventHandlerManager". 
 			Questo si preoccupa di metterli in una coda di eventi che è il cuore
 			del pattern ``Event-loop". Dopodiché, si estrae un evento per iterazione dalla coda e lo si
@@ -146,8 +163,11 @@
 			stato ``\textit{available}", dove quest'ultimo presenta la particolarità di azzerare il peso
 			correntemente contenuto nel bidone perché corrisponde all'azione di svuotamento del bidone
 			stesso e alla sua rimessa in funzione. Questi due cambi di stato possono essere effettuati
-			in qualsiasi momento, anche durante il deposito.
-			Oltre a ciò, è possibile comunicare ad Edge l'inizio
+			in qualsiasi momento, anche durante il deposito. Il passaggio allo stato
+			``\textit{unavailable}" durante il deposito non genera però la terminazione anticipata,
+			mentre se il token è già stato fornito e lo stato passa ad ``\textit{unavailable}", non sarà
+			possibile cominciare il deposito.
+			Oltre a ciò, è possibile comunicare all'Edge l'inizio
 			di un deposito, cosa che verrà fatta esclusivamente se lo stato corrente è pari a
 			``\textit{available}", e la terminazione dello stesso. Un deposito potrebbe terminare anche nel
 			caso l'utente che sta effettuando il deposito appoggi troppo peso rispetto a quanto ne può
@@ -194,22 +214,23 @@
 			utilizzata anche la libreria jQuery per semplificare l'uso di Javascript. Di questa in
 			particolare è stata usata l'API per l'uso di AJAX, sfruttato per effettuare richieste
 			asincrone al server ``Service" per ottenere dati sul bidone in formato JSON, cioè lo stato corrente,
-			il peso dei rifiuti correntemente nel bidone, il numero di depositi effettuati e il log,
+			il peso dei rifiuti correntemente nel bidone, il numero di depositi effettuati e il \textit{log},
 			oppure per permettere la gestione del comportamento del sistema, cioè le
 			funzionalità di forzatura dello stato ``\textit{available}" o ``\textit{unavailable}".
+			Quest'ultima funzionalità è permessa tramite delle \textit{request} HTTP di tipo PUT, tutti
+			gli altri messaggi HTTP inviati sono di tipo GET.
 			\subsection{Controller}
-			Il sistema Arduino presenta un \textit{PhysicalSystem}, che rappresenta il sistema fisico, 
-			un \textit{CommunicationSystem}, usato per incapsulare la gestione della comunicazione via Bluetooth, 
+			Il sistema Arduino presenta una classe ``PhysicalSystem", che rappresenta il sistema fisico, 
+			una classe ``CommunicationSystem", usata per incapsulare la gestione della comunicazione via Bluetooth, 
 			e un sistema di gestione logica degli eventi e dei loro \textit{handler}.\newline
 			L'utilizzo del Bluetooth è permesso dalla libreria ``SoftwareSerial", che permette di inviare
 			e ricevere dati da un qualsiasi componente che scambia dati tramite connessione seriale
 			asincrona come se si stesse usando la comunicazione seriale standard fornita da Arduino.\newline 
 			I messaggi sono costituiti da un solo carattere e perciò, avendo una struttura così
-			rigida, non è necessario l'uso di terminatori di messaggio (presenti però per come la comunicazione
-			Bluetooth è gestita dall'applicazione, essi vengono ignorati). I messaggi vengono convertiti in 
+			rigida, non sarebbe necessario l'uso di terminatori di messaggio, anche se invece questi sono
+			presenti per come la comunicazione Bluetooth è gestita lato app. Questi terminatori vengono semplicemente ignorati. I messaggi vengono convertiti in 
 			eventi da un ``EventGenerator'', che si occupa anche di generare eventi legati allo scorrere 
-			del tempo (come la fine del deposito), poi l'``HandlerManager'' si occupa di eseguire l'\textit{handler}
-			corretto per l'evento generato.\newline
+			del tempo come ad esempio la fine del deposito, poi l'``HandlerManager'' si occupa di eseguire l'\textit{handler} corretto per l'evento generato.\newline
 			In caso non sia presente alcun messaggio, l'oggetto che si occupa della comunicazione via
 			Bluetooth restituisce un messaggio vuoto. Questo viene poi a sua volta convertito dal
 			\textit{parser} in un evento nullo, a cui non è associato nessun \textit{handler} e che
@@ -227,13 +248,23 @@
 			a interagire con l'app mentre si cerca di comunicare con il ``Service''. Per ogni messaggio da inviare 
 			vengono usati un nuovo ``ServiceMessageBuilder'' e una nuova ``AsyncTask''.\newline
 			Per impedire che il sistema si bloccasse per tempi indefiniti nel caso il ``Service'' non fosse 
-			contattabile si è posto un limite alla durata della connessione HTTP.
+			contattabile si è posto un limite alla durata della connessione HTTP. I messaggi di ``keep-alive" vengono mandati ogni 90 secondi, più della durata di un normale deposito, così
+			da non dover impiegare l'invio di un messaggio durante un deposito breve. Il Service
+			dall'altro lato attende 3 minuti e 20 secondi prima di terminare spontaneamente il deposito,
+			che è poco più del doppio del tempo necessario per l'invio di un ``keep-alive". Questo perché,
+			su una connessione TCP che crea un canale di comunicazione affidabile, se un messaggio viene perso
+			significa che è successo qualcosa di potenzialmente grave tra le due socket, dopo due messaggi
+			persi si può dare per persa definitivamente la connessione. Attendere qualche secondo in più
+			oltre il tempo del secondo ``keep-alive" serve per scongiurare in ogni modo di confondere un
+			caso di congestione della rete con quello di connettività persa.\newline
+			Il \textit{body} delle \textit{request} HTTP di tipo \textit{PUT} che l'app invia al Service è
+			formattato in JSON e include sempre tra i campi il token che è stato fornito all'app. Le \textit{request} di tipo PUT sono quelle inerenti al deposito e, oltre a quella GET per il
+			token, non invia altri tipi di messaggi HTTP.
 			\subsection{Edge}
-			La componente Model è suddivisa in tre sotto-componenti: una che contiene le classi che
-			rappresentano i componenti fisici con cui ESP va ad interagire, una per le classi che
-			contengono la logica di funzionamento dell'intero sistema, secondo un pattern di tipo
-			``Strategy", che altro non sono che sotto-classi dell'interfaccia ``EventHandler", quindi 
-			\textit{handler} di eventi specifici, e una che contiene tutte le classi per rappresentare
+			La componente \textit{Model} è suddivisa in tre sotto-componenti: una che contiene le classi che
+			rappresentano i componenti fisici con cui ESP va ad interagire, una per le classi che permettono l'implementazione del pattern ``Event-loop" necessarie per il Model per poter
+			mettere in esecuzione la logica applicativa dal \textit{Controller}, e una che contiene
+			tutte le classi per rappresentare
 			all'interno di Edge la componente Service e la possibilità di scambiare messaggi con essa.
 			Edge perciò, potendo sia inviare che ricevere messaggi, ed essendo questi scambiati via
 			HTTP, deve poter fare sia da \textit{server} che da \textit{client} HTTP. In più, un
@@ -255,13 +286,17 @@
 			ricorso alla libreria ``LinkedList". Per il \textit{parsing} e l'\textit{encoding} dei dati in formato
 			JSON ricevuti ed inviati si è fatto ricorso alla libreria ``ArduinoJSON". Per l'utilizzo di
 			un \textit{client} e un \textit{server} web si è fatto ricorso alle
-			librerie ``ESP8266WiFi", ``ESP8266HTTPClient" e ``ESP8266WebServer".
+			librerie ``ESP8266WiFi", ``ESP8266HTTPClient" e ``ESP8266WebServer".\newline
+			L'unica \textit{request} HTTP che l'Edge può effettuare è quella utile a segnalare la
+			terminazione anticipata del deposito dovuta al troppo peso inserito, che è di tipo PUT.
+			Inoltre, come parametri per il peso si è deciso che per ragioni di semplicità di test il peso
+			massimo registrabile per singolo deposito andasse da 0 a 100 e la capienza massima del bidone
+			fosse di 200 unità.
 			\subsection{Service}
 			Per realizzare l'applicazione ``Service'' ci si è appoggiati al \textit{framework} ``VertX" per Java
 			che fornisce già tutti gli strumenti necessari per gestire un \textit{web server}, un
 			\textit{web client} e per effettuare \textit{request} o formulare \textit{response} HTTP.
-			È presente inoltre una classe che rappresenta una copia, mantenuta allineata con la versione fisica, del sistema
-			Edge di cui Service è il \textit{digital twin}. L'oggetto prodotto da questa classe viene
+			È presente inoltre una classe che rappresenta una copia, mantenuta allineata con la versione fisica, del sistema Edge. L'oggetto prodotto da questa classe viene
 			interpellato per quanto riguarda le operazioni di ottenimento dello stato corrente e viene
 			aggiornato in caso di forzatura dello stato dalla Dashboard o da un deposito terminato
 			anticipatamente e segnalato perciò da Edge. Informazioni come il conteggio corrente dei
@@ -271,5 +306,9 @@
 			bisogno questi vengono creati, se non presenti, ma con entrambi i parametri citati
 			posti a zero, così dall'operazione successiva saranno già pronti per l'uso. Per quanto
 			riguarda la loro cancellazione, questa non è prevista in Service, dovrà essere l'operatore
-			a cancellarli manualmente quando non saranno più necessari.
+			a cancellarli manualmente quando non saranno più necessari.\newline
+			Quando il Service comunica con l'Edge effettua delle \textit{request} HTTP di tipo PUT,
+			per impostare lo stato di quest'ultimo o per richiedere l'inizio o il termine di un deposito,
+			eccetto che per ottenere le informazioni sullo stato corrente, dove invece fa delle
+			\textit{request} HTTP di tipo GET.
 \end{document} 
